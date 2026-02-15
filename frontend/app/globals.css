@@ -1,0 +1,362 @@
+@import "tailwindcss";
+
+/*
+  LUMINA – premium minimal design system.
+  Palette: bg-background, text-foreground, bg-primary, border-border, etc.
+  Shape & motion: --radius-*, --shadow-*, --ease-*, --duration-*
+*/
+:root {
+  /* Palette */
+  --background: #faf9f7;
+  --foreground: #1c1b19;
+  --surface: #f5f3f0;
+  --surface-elevated: #ffffff;
+  --border: #e8e5e0;
+  --muted: #6b6560;
+  --primary: #1a3c3c;
+  --primary-hover: #244d4d;
+  --accent: #b8860b;
+  --accent-soft: #e8d5a3;
+  --success: #2d5a4a;
+  --error: #a63d3d;
+
+  /* Shape – everything connects with same radius scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* Shadow – minimal, premium */
+  --shadow-card: 0 1px 3px rgba(28, 27, 25, 0.04);
+  --shadow-elevated: 0 8px 30px -8px rgba(28, 27, 25, 0.08), 0 2px 8px -4px rgba(28, 27, 25, 0.04);
+  --shadow-hover: 0 20px 50px -12px rgba(28, 27, 25, 0.12), 0 4px 12px -4px rgba(28, 27, 25, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(26, 60, 60, 0.2);
+
+  /* Motion – consistent interactivity */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-smooth: 400ms;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-hover: var(--shadow-hover);
+}
+
+/* Single scroll: only the layout content column scrolls, not the window */
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  overflow: hidden;
+}
+
+
+/* Glass morphism */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Loading – premium spinner (rotating segment + soft track) */
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes loader-dots {
+  0%, 80%, 100% {
+    transform: scale(0.75);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.loader-ring {
+  position: relative;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+}
+.loader-ring::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--primary);
+  animation: loader-spin 0.9s var(--ease-in-out) infinite;
+}
+
+.loader-ring-sm {
+  width: 24px;
+  height: 24px;
+}
+.loader-ring-sm::after {
+  border-width: 2px;
+  inset: -2px;
+}
+
+.loader-ring-md {
+  width: 48px;
+  height: 48px;
+}
+
+.loader-ring-lg {
+  width: 64px;
+  height: 64px;
+  border-width: 4px;
+}
+.loader-ring-lg::after {
+  border-width: 4px;
+  inset: -4px;
+  animation-duration: 1s;
+}
+
+/* Spinner on dark/primary background */
+.loader-ring-white {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.loader-ring-white::after {
+  border-top-color: white;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s var(--ease-out) forwards;
+}
+
+/* Premium minimal UI – shared so everything connects */
+.transition-premium {
+  transition: color var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out);
+}
+
+.card {
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-xl);
+  font-weight: 800;
+  transition: background-color var(--duration-base) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-elevated);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--foreground);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xl);
+  font-weight: 800;
+  transition: border-color var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.btn-secondary:hover {
+  border-color: var(--foreground);
+  background: var(--surface);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.shimmer-bg {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* Homepage: gentle float for vignettes – vertical + slight horizontal drift */
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -10px); }
+  50% { transform: translate(-2px, -6px); }
+  75% { transform: translate(-3px, -12px); }
+}
+
+/* Homepage: softer float variant (different timing for variety) */
+@keyframes floatSlow {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-4px, -8px); }
+  66% { transform: translate(2px, -5px); }
+}
+
+/* Homepage: staggered slide-up for content */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Homepage: subtle glow pulse on hero */
+@keyframes softGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* Homepage: background gradient drift */
+@keyframes gradientDrift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+  animation: float 7s var(--ease-in-out) infinite;
+}
+
+.animate-float-slow {
+  animation: floatSlow 9s var(--ease-in-out) infinite;
+}
+
+.animate-slide-up {
+  opacity: 0;
+  animation: slideUpFade 0.7s var(--ease-out) forwards;
+}
+
+.animate-soft-glow {
+  animation: softGlow 4s ease-in-out infinite;
+}
+
+.animate-gradient-drift {
+  background-size: 200% 200%;
+  animation: gradientDrift 25s ease infinite;
+}
+
+/* Stagger delays */
+.animation-delay-0 { animation-delay: 0ms; }
+.animation-delay-75 { animation-delay: 75ms; }
+.animation-delay-150 { animation-delay: 150ms; }
+.animation-delay-225 { animation-delay: 225ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-375 { animation-delay: 375ms; }
+.animation-delay-450 { animation-delay: 450ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+
+/* Sticky column for tables */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+}
