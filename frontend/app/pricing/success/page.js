@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PricingSuccessPage() {
+function PricingSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -42,5 +43,13 @@ export default function PricingSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function PricingSuccessPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-[600px] px-8 pb-32 pt-24 md:px-12 text-center animate-pulse text-muted">Loading…</div>}>
+      <PricingSuccessContent />
+    </Suspense>
   );
 }

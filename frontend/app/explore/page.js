@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams, useRouter } from "next/navigation";
 import { fetchListings } from "@/lib/api";
@@ -83,7 +83,7 @@ function filterByFilters(properties, filters) {
   });
 }
 
-export default function ExplorePage() {
+function ExplorePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParam = searchParams.get("q") || "";
@@ -529,5 +529,22 @@ export default function ExplorePage() {
       </div>
     </div>
     </RequireAuth>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense
+      fallback={
+        <Loading
+          variant="screen"
+          size="md"
+          message="Loading listings..."
+          className="min-h-[60vh] pt-24"
+        />
+      }
+    >
+      <ExplorePageContent />
+    </Suspense>
   );
 }

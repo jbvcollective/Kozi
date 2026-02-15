@@ -15,8 +15,9 @@
     "dev": "node server.js",
     "fetch-unified": "node fetchAllListingsUnified.js",
     "sync-sold-listings": "node syncSoldListings.js",
-    "analytics": "node computeMarketHeatAnalytics.js","analytics-and-open-house":"node runAnalyticsAndOpenHouse.js",
-    "backfill-clean":"node backfillListingsUnifiedClean.js"
+    "analytics": "node computeMarketHeatAnalytics.js",
+    "analytics-and-open-house": "node runAnalyticsAndOpenHouse.js",
+    "backfill-clean": "node backfillListingsUnifiedClean.js"
   },
   "engines": {
     "node": ">=18"

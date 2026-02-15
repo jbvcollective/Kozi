@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchListings } from "@/lib/api";
@@ -11,7 +12,9 @@ import RequireAuth from "@/components/RequireAuth";
 export default function ComparePage() {
   return (
     <RequireAuth>
-      <ComparePageContent />
+      <Suspense fallback={<Loading variant="screen" size="md" message="Loading comparison..." className="min-h-[60vh] px-8 pt-24 md:px-12" />}>
+        <ComparePageContent />
+      </Suspense>
     </RequireAuth>
   );
 }
