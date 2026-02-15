@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listings with Photos</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; background: #f5f5f5; }
+    h1 { margin: 0 0 1rem 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .card {
+      background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      cursor: pointer; transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .card-carousel { position: relative; width: 100%; aspect-ratio: 4/3; background: #e0e0e0; overflow: hidden; }
+    .card-carousel img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-carousel .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px;
+      background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 1.2rem; line-height: 1; opacity: 0.8; }
+    .card-carousel .nav:hover { opacity: 1; background: rgba(0,0,0,0.7); }
+    .card-carousel .nav.prev { left: 8px; }
+    .card-carousel .nav.next { right: 8px; }
+    .card-carousel .nav:disabled { opacity: 0.3; cursor: default; }
+    .card-carousel .counter { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+    .card-body { padding: 0.75rem 1rem; }
+    .card-title { font-weight: 600; margin: 0 0 0.25rem 0; }
+    .card-meta { font-size: 0.875rem; color: #666; }
+    .card-body .view-all { font-size: 0.8rem; color: #06c; margin-top: 4px; }
+    .loading { text-align: center; padding: 2rem; color: #666; }
+    .error { color: #c00; padding: 1rem; background: #fee; border-radius: 6px; margin-bottom: 1rem; }
+    .source { font-size: 0.85rem; color: #666; margin-bottom: 1rem; }
+
+    .lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
+    .lightbox.open { display: flex; }
+    .lightbox .close { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px;
+      background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .lightbox .close:hover { background: rgba(255,255,255,0.3); }
+    .lightbox .title { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 1rem; }
+    .lightbox .main-img-wrap { max-width: 90vw; max-height: 85vh; display: flex; align-items: center; justify-content: center; }
+    .lightbox .main-img-wrap img { max-width: 100%; max-height: 85vh; object-fit: contain; referrerpolicy: no-referrer; }
+    .lightbox .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px;
+      background: rgba(255,255,255,0.2); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 1.5rem; }
+    .lightbox .nav:hover { background: rgba(255,255,255,0.35); }
+    .lightbox .nav.prev { left: 20px; }
+    .lightbox .nav.next { right: 20px; }
+    .lightbox .nav:disabled { opacity: 0.3; cursor: default; }
+    .lightbox .counter { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Listings with Photos</h1>
+  <div id="source" class="source"></div>
+  <div id="app"><div class="loading">Loading…</div></div>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button type="button" class="close" aria-label="Close">&times;</button>
+    <span class="title" id="lightbox-title"></span>
+    <button type="button" class="nav prev" aria-label="Previous">&lsaquo;</button>
+    <div class="main-img-wrap"><img id="lightbox-img" src="" alt="" referrerpolicy="no-referrer" /></div>
+    <button type="button" class="nav next" aria-label="Next">&rsaquo;</button>
+    <div class="counter" id="lightbox-counter"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://jbskoczmufiavukkfrne.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impic2tvY3ptdWZpYXZ1a2tmcm5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3ODI1ODQsImV4cCI6MjA4NTM1ODU4NH0.rQMSreTKpNLHWisp816F6kruMiO7FlmE_pnDeaSiXYc';
+    let listingsData = [];
+
+    function escapeHtml(s) {
+      if (s == null || s === undefined) return '';
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function tryNextPhoto(img) {
+      const card = img.closest('.card');
+      if (!card) return;
+      const listingIndex = parseInt(card.getAttribute('data-listing-index'), 10);
+      const photos = listingsData[listingIndex] && listingsData[listingIndex].photos;
+      if (!photos || !photos.length) return;
+      const fallback = (parseInt(img.getAttribute('data-fallback-index') || '0', 10) + 1);
+      img.setAttribute('data-fallback-index', fallback);
+      if (fallback < photos.length) img.src = photos[fallback];
+      else { img.style.background = '#ddd'; img.alt = 'Photo unavailable'; }
+    }
+
+    function getDisplayPhotos(row) {
+      const p = row?.photos;
+      if (!p) return [];
+      if (Array.isArray(p)) return p;
+      if (p.web && p.web.length) return p.web;
+      if (p.mobile && p.mobile.length) return p.mobile;
+      return [];
+    }
+
+    function openLightbox(listingIndex, photoIndex) {
+      const listing = listingsData[listingIndex];
+      if (!listing || !listing.photos || listing.photos.length === 0) return;
+      const photos = listing.photos;
+      const key = listing.listing_key || listing.listingNumber;
+      let idx = photoIndex >= 0 ? photoIndex : 0;
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      const title = document.getElementById('lightbox-title');
+      const counter = document.getElementById('lightbox-counter');
+      const prevBtn = lb.querySelector('.nav.prev');
+      const nextBtn = lb.querySelector('.nav.next');
+      function show() {
+        img.src = photos[idx];
+        img.alt = 'Photo ' + (idx + 1);
+        title.textContent = key + ' — Photo ' + (idx + 1) + ' of ' + photos.length;
+        counter.textContent = (idx + 1) + ' / ' + photos.length;
+        prevBtn.disabled = idx === 0;
+        nextBtn.disabled = idx === photos.length - 1;
+      }
+      prevBtn.onclick = function(e) { e.stopPropagation(); if (idx > 0) { idx--; show(); } };
+      nextBtn.onclick = function(e) { e.stopPropagation(); if (idx < photos.length - 1) { idx++; show(); } };
+      document.addEventListener('keydown', function keyHandler(e) {
+        if (e.key === 'Escape') { closeLightbox(); document.removeEventListener('keydown', keyHandler); }
+        if (e.key === 'ArrowLeft' && idx > 0) { idx--; show(); }
+        if (e.key === 'ArrowRight' && idx < photos.length - 1) { idx++; show(); }
+      });
+      show();
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightbox').setAttribute('aria-hidden', 'true');
+    }
+    document.getElementById('lightbox').querySelector('.close').onclick = closeLightbox;
+    document.getElementById('lightbox').onclick = function(e) { if (e.target === this) closeLightbox(); };
+
+    function render(data, source) {
+      listingsData = (data || []).map(row => ({ ...row, photos: getDisplayPhotos(row) }));
+      const app = document.getElementById('app');
+      const sourceEl = document.getElementById('source');
+      sourceEl.textContent = source || '';
+      if (listingsData.length === 0) {
+        sourceEl.textContent = 'No listings. Run npm run sync-with-limit -- 2000 then refresh.';
+        app.innerHTML = '<div class="loading">No listings. Run <code>npm run sync-with-limit -- 2000</code>, then refresh.</div>';
+        return;
+      }
+      app.innerHTML = '<div class="grid">' + listingsData.map((row, listingIndex) => {
+        const key = row.listing_key || row.listingNumber;
+        const photos = row.photos || [];
+        let carouselHtml;
+        if (photos.length === 0) {
+          carouselHtml = '<div class="card-carousel" style="display:flex;align-items:center;justify-content:center;color:#999;">No photo</div>';
+        } else {
+          carouselHtml = '<div class="card-carousel" data-listing-index="' + listingIndex + '">' +
+            '<img src="' + escapeHtml(photos[0]) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback-index="0" onerror="tryNextPhoto(this)" />' +
+            (photos.length > 1 ? '<button type="button" class="nav prev" aria-label="Prev">&lsaquo;</button><button type="button" class="nav next" aria-label="Next">&rsaquo;</button>' : '') +
+            '<span class="counter">1 / ' + photos.length + '</span></div>';
+        }
+        return '<div class="card" data-listing-index="' + listingIndex + '">' + carouselHtml +
+          '<div class="card-body">' +
+            '<div class="card-title">' + escapeHtml(key) + '</div>' +
+            '<div class="card-meta">' + photos.length + ' photo' + (photos.length !== 1 ? 's' : '') + '</div>' +
+            (photos.length > 0 ? '<div class="view-all">Click to view all photos</div>' : '') +
+          '</div></div>';
+      }).join('') + '</div>';
+
+      app.querySelectorAll('.card').forEach(card => {
+        const listingIndex = parseInt(card.getAttribute('data-listing-index'), 10);
+        const carousel = card.querySelector('.card-carousel');
+        if (carousel && listingsData[listingIndex] && listingsData[listingIndex].photos && listingsData[listingIndex].photos.length > 1) {
+          const photos = listingsData[listingIndex].photos;
+          const img = carousel.querySelector('img');
+          const counter = carousel.querySelector('.counter');
+          const prevBtn = carousel.querySelector('.nav.prev');
+          const nextBtn = carousel.querySelector('.nav.next');
+          let idx = 0;
+          function updateCarousel(e) { if (e) e.stopPropagation(); idx = Math.max(0, Math.min(idx, photos.length - 1)); img.src = photos[idx]; carousel.setAttribute('data-current-index', idx); counter.textContent = (idx + 1) + ' / ' + photos.length; if (prevBtn) prevBtn.disabled = idx === 0; if (nextBtn) nextBtn.disabled = idx === photos.length - 1; }
+          if (prevBtn) prevBtn.onclick = function(e) { e.stopPropagation(); idx--; updateCarousel(); };
+          if (nextBtn) nextBtn.onclick = function(e) { e.stopPropagation(); idx++; updateCarousel(); };
+          updateCarousel();
+        }
+      });
+      app.querySelectorAll('.card').forEach(card => {
+        const listingIndex = parseInt(card.getAttribute('data-listing-index'), 10);
+        card.addEventListener('click', function(e) {
+          if (e.target.closest('.nav')) return;
+          const carousel = card.querySelector('.card-carousel');
+          const startIndex = carousel && carousel.hasAttribute('data-current-index') ? parseInt(carousel.getAttribute('data-current-index'), 10) : 0;
+          openLightbox(listingIndex, startIndex);
+        });
+      });
+    }
+
+    async function loadListings() {
+      const app = document.getElementById('app');
+      if (typeof window.supabase === 'undefined') {
+        app.innerHTML = '<div class="error">Supabase client not loaded.</div>';
+        return;
+      }
+      try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data, error } = await supabase.from('listings_unified').select('listing_key, idx, vow, updated_at').order('updated_at', { ascending: false });
+        if (error) throw new Error(error.message);
+        const rows = data ?? [];
+        const list = rows.map(r => ({ listing_key: r.listing_key, photos: r.idx?.photos ?? r.vow?.photos ?? [], ...(r.idx ?? {}) }));
+        render(list, list.length > 0 ? 'Loaded from Supabase (listings_unified).' : '');
+      } catch (e) {
+        app.innerHTML = '<div class="error">Supabase: ' + escapeHtml(String(e.message || e)) + '</div>';
+        console.error(e);
+      }
+    }
+
+    function main() {
+      if (typeof window.supabase !== 'undefined') loadListings();
+      else {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        s.onload = loadListings;
+        s.onerror = function() { document.getElementById('app').innerHTML = '<div class="error">Failed to load Supabase client.</div>'; };
+        document.head.appendChild(s);
+      }
+    }
+    main();
+  </script>
+</body>
+</html>

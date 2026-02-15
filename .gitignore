@@ -1,0 +1,4 @@
+# Env files (contain secrets: Stripe, Supabase, etc.)
+.env
+.env.local
+.env.*.local

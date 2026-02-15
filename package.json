@@ -1,0 +1,30 @@
+{
+  "name": "vestahome-idx-sync",
+  "version": "1.0.0",
+  "description": "Node.js backend (Express + Supabase) for VestaHome",
+  "type": "module",
+  "scripts": {
+    "sync": "node fetchAllListingsUnified.js && node syncSoldListings.js && node runAnalyticsAndOpenHouse.js && node backfillListingsUnifiedClean.js",
+    "sync-with-limit": "node runSyncWithLimit.js",
+    "sync-watch": "node runSyncEvery30Mins.js",
+    "clear-listings": "node clearListingsSupabase.js",
+    "fetch-listings": "node fetchListings.js",
+    "fetch-vow-listings": "node fetchVowListings.js",
+    "fetch-all": "node fetchListings.js && node fetchVowListings.js",
+    "serve": "node server.js",
+    "dev": "node server.js",
+    "fetch-unified": "node fetchAllListingsUnified.js",
+    "sync-sold-listings": "node syncSoldListings.js",
+    "analytics": "node computeMarketHeatAnalytics.js","analytics-and-open-house":"node runAnalyticsAndOpenHouse.js",
+    "backfill-clean":"node backfillListingsUnifiedClean.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.22.1",
+    "stripe": "^17.4.0"
+  }
+}
