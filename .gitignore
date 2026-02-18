@@ -2,3 +2,7 @@
 .env
 .env.local
 .env.*.local
+
+# PropTx incremental sync state (local last-run time and batch offset)
+.last-proptx-sync
+.last-proptx-sync-offset

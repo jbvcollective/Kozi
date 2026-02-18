@@ -37,7 +37,7 @@ export const VOW_PROPERTY_FIELDS = [
   "InternetAddressDisplayYN", "InternetEntireListingDisplayYN", "IslandYN", "KitchensAboveGrade", "KitchensBelowGrade",
   "KitchensTotal", "LaundryFeatures", "LaundryLevel", "LeaseAgreementYN", "LeaseAmount", "LeaseTerm",
   "LeaseToOwnEquipment", "LeasedConditionalEntryTimestamp", "LeasedEntryTimestamp", "LeasedLandFee", "LeasedTerms",
-  "LegalApartmentNumber", "LegalStories", "LinkProperty", "LinkYN", "LiquorLicenseYN", "ListAOR", "ListOfficeName",
+  "Latitude", "Longitude", "LegalApartmentNumber", "LegalStories", "LinkProperty", "LinkYN", "LiquorLicenseYN", "ListAOR", "ListOfficeName",
   "ListPrice", "ListPriceUnit", "ListingContractDate", "ListingId", "LivingAreaRange", "LocalImprovements",
   "LocalImprovementsComments", "Locker", "LockerLevel", "LockerNumber", "LockerUnit", "LotDepth", "LotDimensionsSource",
   "LotFeatures", "LotIrregularities", "LotShape", "LotSizeArea", "LotSizeAreaUnits", "LotSizeDimensions",

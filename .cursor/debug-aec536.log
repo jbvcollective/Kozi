@@ -1,0 +1,559 @@
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405199810,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405199810,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405202290,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405202291,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405202291,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405202291,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405202297,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405202297,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405202298,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405202298,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405202299,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405202299,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405202301,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405202301,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405202572,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405202887,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405203139,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405203385,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"fetchAllListingsUnified.js:run:start","message":"batch run start","data":{"offset":50,"pageSize":10,"offsetFilePath":"C:\\Users\\johnb\\Documents\\VestaHome_Backend\\.last-proptx-sync-offset"},"timestamp":1771405212167,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"fetchAllListingsUnified.js:run:end","message":"batch run end","data":{"nextOffset":60,"idxListLength":10,"pageSize":10,"didReset":false,"reason":"advance"},"timestamp":1771405222303,"hypothesisId":"H1-H2-H3"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405253242,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405253261,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405253261,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405254172,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405290744,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405290745,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405290758,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405290758,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405290759,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405290759,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405291593,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405291932,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405304693,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405304694,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405304694,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405304694,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405304701,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405304701,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405304701,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405304702,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405304702,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405304702,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405304703,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405304703,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405304864,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405305162,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405305274,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405305540,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405369223,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405369263,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405369264,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405369743,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405377278,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405377280,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405377293,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405377293,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405377294,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405377294,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405378092,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405378146,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405399663,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405399664,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405399664,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405399664,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405399671,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405399671,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405399671,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405399671,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405399672,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405399672,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405399672,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405399672,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405399797,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405399871,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405400086,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405400359,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405403965,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405403971,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405403971,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405404145,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405405045,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405405048,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405405048,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405405045,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405405048,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405405048,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405405413,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405405606,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405409371,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405409371,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405409372,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405409372,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405409378,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405409378,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405409379,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405409379,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405409379,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405409379,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405409380,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405409380,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405409524,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405409749,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405409770,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405410069,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405414046,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405414046,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405414046,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405414047,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405414050,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405414051,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405414054,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405414054,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405414054,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405414054,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405414055,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405414055,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405414215,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405414522,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405414646,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405414982,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405428528,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405428528,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405428535,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405428535,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405428536,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405428536,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405428965,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405429260,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405429303,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405429304,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405429304,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405429304,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405429309,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405429310,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405429310,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405429310,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405429311,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405429311,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405429311,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405429311,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405429450,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405429565,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405429802,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405430158,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405434853,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405434856,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405434857,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405435028,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405482413,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405482413,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405482434,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405482434,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405482435,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405482435,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405483204,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405483562,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405493175,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405493175,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405493176,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405493175,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405493180,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405493180,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405493181,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405493181,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405493182,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405493182,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405493182,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405493182,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405493348,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405493495,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405493589,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405494253,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405499534,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405499535,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405499546,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405499546,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405499546,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405499546,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405499880,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405500167,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405514280,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405514281,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405514281,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405514280,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405514286,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405514287,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405514287,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405514287,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405514288,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405514288,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405514288,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405514288,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405514427,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405514561,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405514663,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405514832,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405516702,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405516702,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405516714,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405516715,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405516714,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405516715,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405516973,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405517176,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405526533,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405526533,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405526534,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405526533,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405526537,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405526537,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405526540,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405526541,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405526541,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405526541,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405526542,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405526542,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405526673,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405526903,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405526915,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405527143,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405537237,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405537237,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405537255,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405537255,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405537256,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405537256,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405537507,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405537647,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405540877,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405540878,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405540878,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405540878,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405540882,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405540884,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405540884,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405540883,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405540886,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405540886,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405540886,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405540886,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405541012,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405541117,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405541200,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405541402,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405548627,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405548628,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405548645,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405548645,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405548646,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405548646,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405548903,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405549175,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405553792,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405553791,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405553792,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405553792,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405553797,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405553797,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405553798,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405553798,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405553798,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405553798,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405553798,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405553799,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405553938,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405554040,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405554149,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405554387,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405562590,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405562591,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405562591,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405562591,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405562596,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405562596,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405562599,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405562599,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405562601,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405562601,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405562602,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405562602,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405562730,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405562843,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405562934,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405563143,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771405565043,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771405565170,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405565193,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405565194,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":5000,"offset":0},"timestamp":1771405565194,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771405565231,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405565242,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405565243,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405565243,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":5000},"timestamp":1771405565243,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405565243,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405565244,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405565449,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405565721,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":3688},"timestamp":1771405570018,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":102},"timestamp":1771405573027,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405573038,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":102,"toEnd":204},"timestamp":1771405573039,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405573223,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771405577606,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405577619,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771405577619,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405577789,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405612315,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405612315,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405613973,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405614890,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405617703,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405617704,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405617707,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405617707,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405617708,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405617708,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405618087,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405618276,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405619213,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405619213,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405619215,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405619215,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405619215,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405619215,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405619537,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405620274,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405716574,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405716575,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405716575,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405716574,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405716578,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405716579,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405716582,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405716582,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405716584,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405716585,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405716585,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405716585,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405716881,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405717071,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405717170,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405717353,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405718459,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405718460,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405718465,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405718465,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405718475,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405718475,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405719181,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405719558,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405722138,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405722138,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405722138,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405722138,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405722144,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405722144,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405722144,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405722144,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405722145,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405722145,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405722145,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405722145,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405722282,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405722453,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405722500,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405722778,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405723551,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771405723552,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405723564,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405723565,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405723565,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771405723564,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405723817,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771405723994,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405778652,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405778653,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405778654,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405778653,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405778656,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405778656,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405778660,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405778660,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405778661,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405778661,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405778662,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405778662,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405778940,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405779084,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405779108,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405779522,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771405781431,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771405781577,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405781602,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":5000,"offset":0},"timestamp":1771405781603,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405781603,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771405781621,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405781646,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405781646,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405781647,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":5000},"timestamp":1771405781647,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405781647,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405781647,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405781813,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405782096,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-catch","message":"fetchListings Supabase branch threw","data":{"errName":"Error","errMessage":"TypeError: Failed to fetch","isAbortError":false},"timestamp":1771405783691,"hypothesisId":"H2-H3-H4"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771405783781,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771405783801,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771405783801,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771405783817,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405783837,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405783838,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771405783838,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771405783837,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405784008,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771405784270,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":102},"timestamp":1771405790934,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405790944,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":102,"toEnd":204},"timestamp":1771405790944,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405791081,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771405794120,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405794135,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771405794135,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405794252,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":306},"timestamp":1771405797279,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405797287,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":306,"toEnd":408},"timestamp":1771405797288,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405797457,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":306},"timestamp":1771405848469,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771405848479,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":306,"toEnd":408},"timestamp":1771405848479,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771405849143,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":306},"timestamp":1771406021948,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406021949,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":306,"toEnd":408},"timestamp":1771406021949,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406022578,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":306},"timestamp":1771406321557,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406321742,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":306,"toEnd":408},"timestamp":1771406321742,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406322961,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771406328065,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":500,"offset":0},"timestamp":1771406328067,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406328081,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771406328081,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":500},"timestamp":1771406328081,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406328081,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771406329165,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":500},"timestamp":1771406329542,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406497946,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406497948,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406497948,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406497947,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406497952,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406497952,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406497955,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406497955,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406497956,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406497956,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406497956,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406497957,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406498199,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406498330,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771406498610,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771406498839,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771406499753,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771406499888,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406499919,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406499919,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771406499938,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406499959,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406499959,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406499960,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406499960,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406500469,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771406500863,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406503080,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406503099,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406503100,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406503358,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":102},"timestamp":1771406506641,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406506652,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":102,"toEnd":204},"timestamp":1771406506652,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406506868,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771406518859,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406518869,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771406518869,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406518976,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406631737,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406631737,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406631774,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406631774,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406631777,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406631777,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771406631779,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771406631891,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-catch","message":"fetchListings Supabase branch threw","data":{"errName":"Error","errMessage":"TypeError: Failed to fetch","isAbortError":false},"timestamp":1771406631927,"hypothesisId":"H2-H3-H4"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-catch","message":"fetchListings Supabase branch threw","data":{"errName":"Error","errMessage":"TypeError: Failed to fetch","isAbortError":false},"timestamp":1771406631927,"hypothesisId":"H2-H3-H4"}
+{"sessionId":"aec536","location":"supabase.js:init","message":"Supabase init","data":{"hasSupabase":true,"urlSet":true,"anonKeySet":true},"timestamp":1771406632096,"hypothesisId":"H1-H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406632166,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406632167,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"AuthContext.js:getSession:then","message":"AuthContext getSession ok","data":{"hasSession":true},"timestamp":1771406632187,"hypothesisId":"H1-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406632241,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406632242,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406632243,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406632243,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406632817,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771406633354,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406656602,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406656681,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406656681,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406657043,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":102},"timestamp":1771406660973,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":102,"toEnd":204},"timestamp":1771406660988,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406660987,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406661206,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771406666121,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406666135,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771406666135,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406666349,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406754883,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":600,"offset":0},"timestamp":1771406754883,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406754887,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406754888,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406754890,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":600},"timestamp":1771406754890,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406755777,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":600},"timestamp":1771406756665,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":0},"timestamp":1771406866370,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406866373,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":0,"toEnd":102},"timestamp":1771406866373,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406866866,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":102},"timestamp":1771406869911,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406869921,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":102,"toEnd":204},"timestamp":1771406869921,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406870210,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771406877457,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771406877469,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771406877469,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771406877678,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":204},"timestamp":1771407033795,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771407034446,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":204,"toEnd":306},"timestamp":1771407034446,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771407034885,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":306},"timestamp":1771407035858,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771407035869,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":306,"toEnd":408},"timestamp":1771407035869,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771407036119,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":408},"timestamp":1771407056705,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771407056719,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":408,"toEnd":510},"timestamp":1771407056719,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771407056926,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":408},"timestamp":1771407592748,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771407592779,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":408,"toEnd":510},"timestamp":1771407592779,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":102},"timestamp":1771407594052,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:entry","message":"fetchListings entry","data":{"hasSupabase":true,"API_BASE":"http://localhost:3000","limit":102,"offset":3672},"timestamp":1771407594394,"hypothesisId":"H1-H2-H5"}
+{"sessionId":"aec536","location":"api.js:getSession:ok","message":"getSession ok","data":{"hasSession":true},"timestamp":1771407594404,"hypothesisId":"H5"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-branch","message":"using Supabase branch","data":{"from":3672,"toEnd":3774},"timestamp":1771407594404,"hypothesisId":"H2"}
+{"sessionId":"aec536","location":"api.js:fetchListings:supabase-success","message":"fetchListings Supabase branch succeeded","data":{"count":16},"timestamp":1771407594671,"hypothesisId":"H2"}

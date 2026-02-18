@@ -1,0 +1,8 @@
+Do NOT run this file in SQL Editor. Use Supabase: Storage → agent-assets → Policies → New policy.
+Paste only the line below into the "Policy definition" field for each policy.
+
+--- Policy 1 (INSERT - uploads including signup). Name: Upload to own or UUID folder. Operation: INSERT ---
+bucket_id = 'agent-assets' AND (storage.foldername(name))[1] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+
+--- Policy 2 (SELECT - read so images show). Name: Anyone can read agent-assets. Operation: SELECT ---
+bucket_id = 'agent-assets'

@@ -20,8 +20,9 @@ export default function SavedView({ properties = [], onSelectProperty, onToggleS
   };
 
   const selectedCount = selectedForCompare.size;
-  const compareSelectedUrl = selectedCount >= 2 ? `/compare?ids=${[...selectedForCompare].join(",")}` : null;
-  const compareAllUrl = count >= 2 ? `/compare?ids=${properties.slice(0, MAX_COMPARE).map((p) => p.id).join(",")}` : "/compare";
+  const compareBase = "/compare?from=saved&ids=";
+  const compareSelectedUrl = selectedCount >= 2 ? `${compareBase}${[...selectedForCompare].join(",")}` : null;
+  const compareAllUrl = count >= 2 ? `${compareBase}${properties.slice(0, MAX_COMPARE).map((p) => p.id).join(",")}` : "/compare?from=saved";
 
   if (count === 0) {
     return (

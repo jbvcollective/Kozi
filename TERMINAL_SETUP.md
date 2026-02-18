@@ -70,7 +70,7 @@ You'll do three things: put your code on GitHub, connect that to Vercel, then ad
 
 5. On GitHub: click **+** (top right) → **New repository**.
 6. Name it (e.g. `Lumina-Realty`). Choose **Public** (recommended—Vercel can connect easily) or **Private** if you want only you to see the code. Leave "Add a README" **unchecked**, then click **Create repository**.
-7. On the new repo page, copy the **URL** (e.g. `https://github.com/jbvcollective/Lumina-Realty.git`).
+7. On the new repo page, copy the **URL** (e.g. `https://github.com/jbvcollective/Lumina-Realty.git`).git
 8. Back in Terminal, run these—paste your repo URL in place of `YOUR_REPO_URL` (e.g. `https://github.com/jbvcollective/Lumina-Realty.git`):
 
    ```bash

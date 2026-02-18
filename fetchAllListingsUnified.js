@@ -1,16 +1,15 @@
 /**
- * Fetch all data from PropTx IDX and VOW feeds per listing.
- * One row per listing in listings_unified; data sorted into two JSONB columns:
- *   idx = full IDX feed payload (property + media) for that listing, or {} when IDX has no data for it
- *   vow = full VOW feed payload (property + media) for that listing, or null when VOW has no data for it
- * Each run overwrites with current feed state only: if a listing moves from IDX to VOW (e.g. sold), we write idx: {}, vow: <data>. No old data is kept.
- * Optional: set CLEANUP_MISSING_LISTINGS=true to delete rows that no longer appear in either feed.
- * Uses IDX token for IDX, VOW token for VOW. Set LISTING_LIMIT in .env to control how many listings to fetch (e.g. 100, 5000).
+ * Fetch one batch of listings from PropTx IDX + VOW and upsert to Supabase.
+ * Intended to be run by the scheduler (runSyncEvery30Mins.js) every N minutes.
+ * One row per listing in listings_unified: listing_key, idx (JSONB), vow (JSONB), updated_at.
+ * Each run fetches one page (SYNC_BATCH_PAGE_SIZE) at current offset; offset is persisted in .last-proptx-sync-offset.
+ * Uses IDX token for IDX, VOW token for VOW.
  */
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { getSyncOffset, setSyncOffset, SYNC_OFFSET_FILE_PATH } from "./syncState.js";
 import {
   processListingPhotos,
   getUrlSignature,
@@ -88,13 +87,16 @@ async function fetchWithRetry(url, headers, maxRetries = 3) {
 const IDX_HEADERS = { Authorization: `Bearer ${PROPTX_IDX_TOKEN}`, Accept: "application/json" };
 const VOW_HEADERS = { Authorization: `Bearer ${PROPTX_VOW_TOKEN}`, Accept: "application/json" };
 
-const LISTING_LIMIT = Math.max(parseInt(process.env.LISTING_LIMIT, 10) || 100, 1);
-const PAGE_SIZE = 100;
 const MEDIA_PAGE_SIZE = 100;
 const IDX_SELECT = ["ListingKey", ...IDX_PROPERTY_FIELDS].join(",");
 const VOW_SELECT = ["ListingKey", ...VOW_PROPERTY_FIELDS].join(",");
-// Fetch all VOW data (no status filter). Set VOW_FILTER_SOLD_ONLY=true in .env to restrict to sold only.
-const VOW_FILTER_SOLD_ONLY = process.env.VOW_FILTER_SOLD_ONLY === "true" || process.env.VOW_FILTER_SOLD_ONLY === "1";
+/** Supabase upsert batch size (default 500). */
+const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 500, 100), 1000);
+const batchSize = UPSERT_BATCH_SIZE;
+/** Pause (ms) between batch flushes. Set FETCH_BATCH_BUFFER_MS in .env (default 2000). */
+const BATCH_BUFFER_MS = Math.max(0, parseInt(process.env.FETCH_BATCH_BUFFER_MS, 10) || 2000);
+/** Listings per scheduler run (default 10). Set SYNC_BATCH_PAGE_SIZE in .env to override. */
+const SYNC_BATCH_PAGE_SIZE = Math.min(Math.max(parseInt(process.env.SYNC_BATCH_PAGE_SIZE, 10) || 10, 1), 500);
 
 async function fetchMediaRaw(baseUrl, headers, filterExpr) {
   const all = [];
@@ -178,115 +180,154 @@ async function fetchMediaForListing(baseUrl, headers, listingKey) {
   return web.length ? web : mobile;
 }
 
-/** Fetch IDX Property list (limit LISTING_LIMIT). */
-async function fetchIDXPropertyList() {
+/** Fetch a single page of IDX Property. Newest first when orderByModification=true. */
+async function fetchIDXPropertyListOnePage(skip, top, orderByModification = true) {
   const list = [];
   let useSelect = true;
-  let skip = 0;
-  while (list.length < LISTING_LIMIT) {
-    let url = `${PROPTX_BASE_URL}/Property?$top=${PAGE_SIZE}&$skip=${skip}`;
-    if (useSelect) url = `${PROPTX_BASE_URL}/Property?$select=${encodeURIComponent(IDX_SELECT)}&$top=${PAGE_SIZE}&$skip=${skip}`;
-    const res = await fetchWithTimeout(url, { headers: IDX_HEADERS });
-    if (!res.ok && res.status === 400 && useSelect) {
-      useSelect = false;
-      continue;
+  let orderBy = orderByModification ? "ModificationTimestamp desc" : null;
+  let url = `${PROPTX_BASE_URL}/Property?$top=${top}&$skip=${skip}`;
+  if (useSelect) url = `${PROPTX_BASE_URL}/Property?$select=${encodeURIComponent(IDX_SELECT)}&$top=${top}&$skip=${skip}`;
+  if (orderBy) url += (url.includes("?") ? "&" : "?") + `$orderby=${encodeURIComponent(orderBy)}`;
+  const res = await fetchWithTimeout(url, { headers: IDX_HEADERS });
+  if (!res.ok && res.status === 400) {
+    if (orderBy) return fetchIDXPropertyListOnePage(skip, top, false);
+    if (useSelect) {
+      url = `${PROPTX_BASE_URL}/Property?$top=${top}&$skip=${skip}`;
+      const r2 = await fetchWithTimeout(url, { headers: IDX_HEADERS });
+      if (!r2.ok) throw new Error(`IDX Property: ${r2.status} ${await r2.text()}`);
+      const data = await r2.json();
+      const items = data.value ?? [];
+      items.forEach((item) => { if (item.ListingKey) list.push(item); });
+      return list;
     }
-    if (!res.ok) throw new Error(`IDX Property: ${res.status} ${await res.text()}`);
-    const data = await res.json();
-    const items = data.value ?? [];
-    for (const item of items) {
-      if (item.ListingKey) list.push(item);
-      if (list.length >= LISTING_LIMIT) break;
-    }
-    if (items.length < PAGE_SIZE || list.length >= LISTING_LIMIT) break;
-    skip += PAGE_SIZE;
-    await sleep(100);
   }
-  return list.slice(0, LISTING_LIMIT);
+  if (!res.ok) throw new Error(`IDX Property: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  const items = data.value ?? [];
+  items.forEach((item) => { if (item.ListingKey) list.push(item); });
+  return list;
 }
 
-/** Fetch VOW Property: all data from VOW feed (no status filter by default). Returns Map<listing_key, vowRecord>. */
-async function fetchVOWPropertyMap() {
+/** Fetch a single page of VOW Property (for batch mode). Returns Map<listing_key, record>. */
+async function fetchVOWPropertyMapOnePage(skip, top, orderByModification = true) {
   const map = new Map();
   let useSelect = true;
-  let useFilter = VOW_FILTER_SOLD_ONLY;
-  let skip = 0;
-  const soldFilter = "StandardStatus eq 'Sold'";
-  let totalItemsSeen = 0;
-  while (map.size < LISTING_LIMIT) {
-    let url = `${PROPTX_VOW_BASE_URL}/Property?$top=${PAGE_SIZE}&$skip=${skip}`;
-    if (useSelect) url = `${PROPTX_VOW_BASE_URL}/Property?$select=${encodeURIComponent(VOW_SELECT)}&$top=${PAGE_SIZE}&$skip=${skip}`;
-    if (useFilter) url += (url.includes("?") ? "&" : "?") + `$filter=${encodeURIComponent(soldFilter)}`;
-    let res;
-    try {
-      res = await fetchWithRetry(url, VOW_HEADERS);
-    } catch (e) {
-      throw e;
+  let orderBy = orderByModification ? "ModificationTimestamp desc" : null;
+  let url = `${PROPTX_VOW_BASE_URL}/Property?$top=${top}&$skip=${skip}`;
+  if (useSelect) url = `${PROPTX_VOW_BASE_URL}/Property?$select=${encodeURIComponent(VOW_SELECT)}&$top=${top}&$skip=${skip}`;
+  if (orderBy) url += (url.includes("?") ? "&" : "?") + `$orderby=${encodeURIComponent(orderBy)}`;
+  const res = await fetchWithRetry(url, VOW_HEADERS);
+  if (!res.ok && res.status === 400) {
+    if (orderBy) return fetchVOWPropertyMapOnePage(skip, top, false);
+    if (useSelect) {
+      url = `${PROPTX_VOW_BASE_URL}/Property?$top=${top}&$skip=${skip}`;
+      const r2 = await fetchWithRetry(url, VOW_HEADERS);
+      if (!r2.ok) throw new Error(`VOW Property: ${r2.status} ${await r2.text()}`);
+      const data = await r2.json();
+      (data.value ?? []).forEach((item) => { if (item.ListingKey) map.set(item.ListingKey, { ...item, photos: [] }); });
+      return map;
     }
-    const text = await res.text();
-    if (!res.ok && res.status === 400) {
-      if (useFilter) {
-        console.log("  VOW: $filter not supported, retrying without filter.");
-        useFilter = false;
-        continue;
-      }
-      if (useSelect) {
-        console.log("  VOW: $select not supported, retrying without $select.");
-        useSelect = false;
-        continue;
-      }
-      throw new Error(`VOW Property: 400 ${text.slice(0, 200)}`);
-    }
-    if (!res.ok) throw new Error(`VOW Property: ${res.status} ${text.slice(0, 200)}`);
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(`VOW Property: invalid JSON (${res.status}) ${text.slice(0, 100)}`);
-    }
-    const items = data.value ?? [];
-    totalItemsSeen += items.length;
-    for (const item of items) {
-      if (item.ListingKey) {
-        map.set(item.ListingKey, { ...item, photos: [] });
-        if (map.size >= LISTING_LIMIT) break;
-      }
-    }
-    if (items.length < PAGE_SIZE || map.size >= LISTING_LIMIT) break;
-    skip += PAGE_SIZE;
-    await sleep(100);
   }
-  if (totalItemsSeen === 0) {
-    console.log("  VOW: API returned 0 properties. Check PROPTX_VOW_BASE_URL and PROPTX_VOW_TOKEN (must be VOW token, not IDX).");
-  }
+  if (!res.ok) throw new Error(`VOW Property: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  (data.value ?? []).forEach((item) => { if (item.ListingKey) map.set(item.ListingKey, { ...item, photos: [] }); });
   return map;
 }
 
+const LOG_ENDPOINT = "http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e";
+function debugLog(location, message, data, hypothesisId) {
+  const body = JSON.stringify({ sessionId: "aec536", location, message, data: { ...data }, timestamp: Date.now(), hypothesisId });
+  fetch(LOG_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "aec536" }, body }).catch(() => {});
+}
+
 async function run() {
-  console.log("LISTING_LIMIT:", LISTING_LIMIT, "| request timeout:", REQUEST_TIMEOUT_MS / 1000, "s | progress every", PROGRESS_INTERVAL, "listings");
-  console.log("Fetching IDX Property list...");
-  const idxList = await fetchIDXPropertyList();
-  console.log("IDX: got", idxList.length, "listings.");
-
-  console.log("Fetching VOW Property (all data from VOW feed)...");
-  let vowMap;
+  const offset = getSyncOffset();
+  const pageSize = SYNC_BATCH_PAGE_SIZE;
+  // #region agent log
+  debugLog("fetchAllListingsUnified.js:run:start", "batch run start", { offset, pageSize, offsetFilePath: SYNC_OFFSET_FILE_PATH }, "H1-H2");
+  // #endregion
+  console.log("Scheduler batch: fetching IDX + VOW in parallel (offset", offset, ", top", pageSize, ").");
+  console.log("Request timeout:", REQUEST_TIMEOUT_MS / 1000, "s");
+  let idxList;
+  let vowMapPage;
   try {
-    vowMap = await fetchVOWPropertyMap();
+    [idxList, vowMapPage] = await Promise.all([
+      fetchIDXPropertyListOnePage(offset, pageSize),
+      fetchVOWPropertyMapOnePage(offset, pageSize),
+    ]);
   } catch (e) {
-    console.warn("VOW fetch failed after retries:", e.message);
-    console.warn("Continuing with IDX only; vow column will be null for all rows.");
-    vowMap = new Map();
+    console.warn("Parallel fetch failed:", e.message, "— retrying IDX and VOW in parallel once.");
+    await sleep(2000);
+    try {
+      [idxList, vowMapPage] = await Promise.all([
+        fetchIDXPropertyListOnePage(offset, pageSize),
+        fetchVOWPropertyMapOnePage(offset, pageSize),
+      ]);
+    } catch (e2) {
+      console.warn("Retry failed:", e2.message, "— falling back to IDX only.");
+      idxList = await fetchIDXPropertyListOnePage(offset, pageSize);
+      vowMapPage = new Map();
+    }
   }
-  console.log("VOW: got", vowMap.size, "listings.");
-
-  const allKeys = new Set(idxList.map((r) => r.ListingKey));
-  vowMap.forEach((_, key) => allKeys.add(key));
+  if (vowMapPage == null) vowMapPage = new Map();
+  const vowMap = vowMapPage;
+  console.log("IDX: got", idxList.length, "listings (page). VOW: got", vowMap.size, "listings (page).");
+  const allKeys = new Set([...idxList.map((r) => r.ListingKey), ...vowMap.keys()]);
+  console.log("Merged IDX + VOW:", allKeys.size, "unique listing keys for this batch.");
+  if (allKeys.size === 0) {
+    console.log("No listings in this page; resetting offset to 0 for next full sweep.");
+    setSyncOffset(0);
+    debugLog("fetchAllListingsUnified.js:run:empty", "empty page, reset offset to 0", { offset, idxListLength: idxList.length, vowMapSize: vowMap.size }, "H2");
+    return;
+  }
 
   const totalListings = allKeys.size;
-  console.log("Fetching media and building unified data for", totalListings, "listings (timeout", REQUEST_TIMEOUT_MS / 1000, "s per request)...");
+  console.log("Fetching media and building unified data for", totalListings, "listings (batch size", batchSize, ", timeout", REQUEST_TIMEOUT_MS / 1000, "s per request)...");
   let ok = 0;
   let fail = 0;
   let index = 0;
+  let batchNumber = 0;
+  const batch = [];
+  const maxUpsertRetries = 3;
+
+  async function flushBatch(rows, batchNumber) {
+    if (rows.length === 0) return;
+    let error;
+    for (let attempt = 1; attempt <= maxUpsertRetries; attempt++) {
+      try {
+        const result = await Promise.race([
+          supabase.from("listings_unified").upsert(rows, { onConflict: "listing_key" }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase upsert timeout")), SUPABASE_TIMEOUT_MS)),
+        ]);
+        error = result?.error;
+      } catch (e) {
+        error = { message: e.message || "Upsert timeout or error" };
+      }
+      if (!error) {
+        ok += rows.length;
+        console.log(`Inserted batch ${batchNumber}`);
+        return;
+      }
+      const isRetryable = /fetch failed|timeout|ECONNRESET|ETIMEDOUT|ENOTFOUND|network/i.test(error.message || "");
+      if (!isRetryable || attempt === maxUpsertRetries) break;
+      await sleep(500 * attempt);
+    }
+    console.warn("Batch upsert failed after retries:", error?.message, "— falling back to single-row upserts for this batch");
+    for (const row of rows) {
+      const r = await Promise.race([
+        supabase.from("listings_unified").upsert(row, { onConflict: "listing_key" }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), SUPABASE_TIMEOUT_MS)),
+      ]);
+      if (r?.error) {
+        fail++;
+        console.error("Upsert error:", r.error.message, "listing_key:", row.listing_key);
+      } else {
+        ok++;
+      }
+      await sleep(50);
+    }
+  }
+
   for (const key of allKeys) {
     index++;
     if (index % PROGRESS_INTERVAL === 0 || index === totalListings) {
@@ -316,53 +357,38 @@ async function run() {
       }
     }
 
-    // Always overwrite with current run: no merging with old data. If IDX no longer has this listing → idx: {}; if VOW no longer has it → vow: null.
     const row = {
       listing_key: key,
       idx: idxPayload ?? {},
       vow: vowPayload,
       updated_at: new Date().toISOString(),
     };
-    const maxUpsertRetries = 3;
-    let error;
-    for (let attempt = 1; attempt <= maxUpsertRetries; attempt++) {
-      try {
-        const result = await Promise.race([
-          supabase.from("listings_unified").upsert(row, { onConflict: "listing_key" }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase upsert timeout")), SUPABASE_TIMEOUT_MS)),
-        ]);
-        error = result?.error;
-      } catch (e) {
-        error = { message: e.message || "Upsert timeout or error" };
-      }
-      if (!error) break;
-      const isRetryable = /fetch failed|timeout|ECONNRESET|ETIMEDOUT|ENOTFOUND|network/i.test(error.message || "");
-      if (!isRetryable || attempt === maxUpsertRetries) break;
-      await sleep(500 * attempt);
-    }
-    if (error) {
-      fail++;
-      console.error("Upsert error:", error.message, "listing_key:", key);
-    } else {
-      ok++;
+    batch.push(row);
+
+    if (batch.length >= batchSize) {
+      batchNumber++;
+      const toUpsert = batch.splice(0, batch.length);
+      await flushBatch(toUpsert, batchNumber);
+      if (BATCH_BUFFER_MS > 0) await sleep(BATCH_BUFFER_MS);
     }
     await sleep(100);
   }
 
+  if (batch.length > 0) {
+    batchNumber++;
+    await flushBatch(batch, batchNumber);
+  }
+
   console.log("listings_unified:", ok, "upserted,", fail, "failed.");
 
-  // Optional: remove rows that are no longer in either feed (so table only has current data). Set CLEANUP_MISSING_LISTINGS=true in .env.
-  const cleanup = process.env.CLEANUP_MISSING_LISTINGS === "true" || process.env.CLEANUP_MISSING_LISTINGS === "1";
-  if (cleanup && allKeys.size > 0) {
-    const { data: existing } = await supabase.from("listings_unified").select("listing_key");
-    const currentSet = new Set(allKeys);
-    const toRemove = (existing || []).map((r) => r.listing_key).filter((k) => !currentSet.has(k));
-    if (toRemove.length > 0) {
-      const { error: delError } = await supabase.from("listings_unified").delete().in("listing_key", toRemove);
-      if (delError) console.warn("Cleanup delete warning:", delError.message);
-      else console.log("listings_unified: removed", toRemove.length, "stale rows (no longer in IDX or VOW).");
-    }
-  }
+  const nextOffset = idxList.length < SYNC_BATCH_PAGE_SIZE ? 0 : offset + SYNC_BATCH_PAGE_SIZE;
+  const didReset = nextOffset === 0;
+  setSyncOffset(nextOffset);
+  // #region agent log
+  debugLog("fetchAllListingsUnified.js:run:end", "batch run end", { nextOffset, idxListLength: idxList.length, pageSize: SYNC_BATCH_PAGE_SIZE, didReset, reason: didReset ? "idxList.length < pageSize (reset)" : "advance" }, "H1-H2-H3");
+  // #endregion
+  if (nextOffset === 0) console.log("Full sweep complete; offset reset to 0. Next run will fetch newest again.");
+  else console.log("Next run will use offset", nextOffset, ".");
 }
 
 run().catch((err) => {

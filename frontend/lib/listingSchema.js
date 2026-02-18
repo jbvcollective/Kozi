@@ -168,42 +168,71 @@ export const LISTING_LABELS = {
   propertyManagementCompany: "Property Management",
 };
 
-/** Order for Key Facts section (top-level summary). publicRemarks shown in Description only. */
+/** Order for Key Facts section (top-level summary). Property type/subtype, style, materials, interior features moved to Details only. */
 export const KEY_FACTS_ORDER = [
   "listPrice", "originalListPrice", "leaseAmount", "year1LeasePrice", "leaseTerm", "rentIncludes",
-  "expirationDate", "listingContractDate",
-  "unparsedAddress", "streetNumber", "streetName", "unitNumber", "city", "cityRegion", "stateOrProvince", "postalCode", "crossStreet",
-  "propertyType", "propertySubType", "architecturalStyle", "constructionMaterials", "approximateAge", "legalStories", "livingAreaRange", "livingArea", "squareFootSource",
-  "bedroomsTotal", "bedroomsAboveGrade", "kitchensTotal", "bathroomsTotalInteger",
-  "washroomsType1", "washroomsType2", "washroomsType3", "washroomsType4", "washroomsType5",
-  "roomsAboveGrade",
-  "garageYN", "garageType", "parkingTotal", "coveredSpaces", "parkingSpot1", "parkingLevelUnit1", "locker", "lockerLevel", "lockerUnit",
-  "cooling", "heatType", "heatSource", "basement", "furnished", "fireplaceYN", "waterfrontYN", "petsAllowed",
-  "interiorFeatures", "propertyFeatures", "associationAmenities",
-  "listOfficeName", "propertyManagementCompany",
-  "mlsStatus", "standardStatus", "contractStatus", "transactionType", "listingKey",
+  "listingContractDate",
+  "approximateAge", "livingAreaRange", "livingArea", "squareFootSource", "basement", "garageType",
+  "petsAllowed",
+  "propertyFeatures", "associationAmenities",
+  "propertyManagementCompany",
+  "listingKey",
 ];
 
-/** Order for Details section (full data) */
-export const DETAILS_ORDER = KEY_FACTS_ORDER;
+/** Order for Details section only. No overlap with Key Facts—Details shows only these fields. */
+export const DETAILS_ORDER = [
+  "propertyType", "propertySubType", "architecturalStyle", "constructionMaterials",
+  "interiorFeatures",
+  "cooling", "heatType", "heatSource", "furnished", "fireplaceYN", "waterfrontYN",
+  "legalStories", "bedroomsTotal", "bedroomsAboveGrade", "kitchensTotal", "bathroomsTotalInteger",
+  "washroomsType1", "washroomsType2", "washroomsType3", "washroomsType4", "washroomsType5",
+  "roomsAboveGrade",
+  "garageYN", "parkingTotal", "coveredSpaces", "parkingSpot1", "parkingLevelUnit1", "locker", "lockerLevel", "lockerUnit",
+];
+
+/**
+ * Canadian postal code format: A1A 1A1 (letter digit letter space digit letter digit).
+ * Normalizes raw feed value (e.g. "M3K0E1", "W05 ON") to display format. Strips trailing province (ON, BC, etc.).
+ * Returns formatted string or original if not parseable.
+ */
+export function normalizeCanadianPostalCode(value) {
+  if (value == null || typeof value !== "string") return value;
+  let s = value.trim().toUpperCase().replace(/\s+/g, " ");
+  if (!s) return value;
+  // Strip trailing province abbreviation (ON, BC, AB, QC, etc.)
+  s = s.replace(/\s*(ON|BC|AB|QC|MB|SK|NS|NB|NL|PE|NT|YT|NU)\s*$/i, "").trim();
+  const lettersDigitsOnly = s.replace(/\s/g, "").replace(/[^A-Z0-9]/g, "");
+  if (lettersDigitsOnly.length === 6) {
+    const a = lettersDigitsOnly.slice(0, 3);
+    const b = lettersDigitsOnly.slice(3, 6);
+    if (/^[A-Z][0-9][A-Z]$/.test(a) && /^[0-9][A-Z][0-9]$/.test(b)) {
+      return `${a} ${b}`;
+    }
+  }
+  if (s.length === 7 && s[3] === " " && /^[A-Z][0-9][A-Z]\s[0-9][A-Z][0-9]$/.test(s)) return s;
+  return value;
+}
 
 /**
  * Build HouseSigma-style listing object from merged idx/vow (vow overridden by idx).
- * Only includes keys that have a non-null, non-empty value.
+ * Only includes keys that have a non-null, non-empty value. Postal code normalized to Canadian format.
  */
 export function mapMergedToHouseSigma(merged) {
   if (!merged || typeof merged !== "object") return {};
   const out = {};
   for (const [propTxKey, canonicalKey] of Object.entries(PROPTX_TO_CANONICAL)) {
-    const raw = merged[propTxKey];
+    let raw = merged[propTxKey];
     if (raw === undefined && merged[canonicalKey] !== undefined) {
-      out[canonicalKey] = merged[canonicalKey];
-      continue;
+      raw = merged[canonicalKey];
     }
     if (raw === null || raw === undefined) continue;
     if (Array.isArray(raw) && raw.length === 0) continue;
     if (typeof raw === "string" && raw.trim() === "") continue;
-    out[canonicalKey] = raw;
+    if (propTxKey === "PostalCode" || canonicalKey === "postalCode") {
+      out[canonicalKey] = normalizeCanadianPostalCode(raw);
+    } else {
+      out[canonicalKey] = raw;
+    }
   }
   // Photos: IDX/VOW use Photos or photos array
   const photos = merged.Photos ?? merged.photos ?? [];
@@ -229,6 +258,19 @@ export function formatListingValue(key, value) {
     const v = String(value).toLowerCase();
     if (v === "true" || v === "y" || v === "yes" || v === "1") return "Yes";
     if (v === "false" || v === "n" || v === "no" || v === "0") return "No";
+  }
+  if (key === "postalCode") {
+    return normalizeCanadianPostalCode(value);
+  }
+  if (key === "livingAreaRange" || key === "livingArea") {
+    const s = String(value).trim();
+    if (!s) return null;
+    return s.includes("-") ? `${s} sq ft` : (Number.isFinite(Number(s)) ? `${Number(s).toLocaleString()} sq ft` : `${s} sq ft`);
+  }
+  if (key === "squareFootSource") {
+    const s = String(value).trim();
+    if (!s) return null;
+    return Number.isFinite(Number(s)) ? `${Number(s).toLocaleString()} sq ft` : s;
   }
   if (key === "virtualTourURLUnbranded" && typeof value === "string" && value.startsWith("http")) {
     return value; // caller can render as <a href={value}>

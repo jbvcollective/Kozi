@@ -11,18 +11,36 @@ function isValidEmail(str) {
 const inputClass =
   "w-full rounded-xl border border-border bg-surface-elevated px-4 py-3 text-foreground placeholder-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
+const AGENT_ASSETS_BUCKET = "agent-assets";
+
+function generateClientAgentCode(name) {
+  const parts = (name || "AX").trim().split(/\s+/);
+  const fn = parts[0] || "AX";
+  const ln = parts.length > 1 ? parts[parts.length - 1] : fn;
+  const fnP = (fn[0] + fn[fn.length - 1]).toUpperCase();
+  const lnP = (ln[0] + ln[ln.length - 1]).toUpperCase();
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yy = String(now.getFullYear() % 100).padStart(2, "0");
+  const rand = String(Math.floor(Math.random() * 90) + 10);
+  return fnP + lnP + mm + yy + rand;
+}
+
 export default function AuthModal({ onClose, onSuccess }) {
   const [mode, setMode] = useState("signin"); // "signin" | "signup"
   const [userType, setUserType] = useState(null); // null | "user" | "agent" (for signup)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [brokerage, setBrokerage] = useState("");
-  const [agentCode, setAgentCode] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -69,8 +87,8 @@ export default function AuthModal({ onClose, onSuccess }) {
       return;
     }
     if (userType === "user") {
-      if (!name?.trim()) {
-        setError("Name is required.");
+      if (!firstName?.trim() || !lastName?.trim()) {
+        setError("First name and last name are required.");
         return;
       }
       if (!phone?.trim()) {
@@ -79,8 +97,12 @@ export default function AuthModal({ onClose, onSuccess }) {
       }
     }
     if (userType === "agent") {
-      if (!name?.trim() || !phone?.trim() || !brokerage?.trim()) {
-        setError("Name, phone, and brokerage chosen name are required.");
+      if (!firstName?.trim() || !lastName?.trim() || !phone?.trim() || !brokerage?.trim()) {
+        setError("First name, last name, phone, and brokerage chosen name are required.");
+        return;
+      }
+      if (!photoFile) {
+        setError("Please add a photo of yourself (required for agents).");
         return;
       }
     }
@@ -90,41 +112,107 @@ export default function AuthModal({ onClose, onSuccess }) {
     }
     setLoading(true);
     try {
+      const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ") || undefined;
       const metadata = {
-        full_name: name.trim() || undefined,
+        full_name: fullName,
         phone: phone.trim() || undefined,
         user_type: userType || "user",
         ...(userType === "agent" && {
           brokerage: brokerage.trim(),
-          agent_code: agentCode?.trim() || undefined,
         }),
       };
+      let authUser = null;
+      let authSession = null;
+
       const { data, error: err } = await supabase.auth.signUp({
         email: trimmedEmail,
         password,
         options: { data: metadata },
       });
+
       if (err) {
-        setError(err.message ?? "Sign up failed.");
-        return;
+        const msg = err.message ?? "";
+        const isDbOrDup = /database|trigger|saving new user|already registered|already been registered/i.test(msg);
+        if (isDbOrDup) {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
+          if (signInErr) {
+            setError(signInErr.message || "Sign up failed. Try again or contact support.");
+            return;
+          }
+          authUser = signInData?.user ?? null;
+          authSession = signInData?.session ?? null;
+        } else {
+          setError(msg || "Sign up failed.");
+          return;
+        }
+      } else {
+        authUser = data?.user ?? null;
+        authSession = data?.session ?? null;
       }
-      if (data?.user && userType === "agent") {
-        await supabase.from("auth_agents_with_type").upsert(
-          {
-            user_id: data.user.id,
-            agent_code: agentCode?.trim() || null,
-            display_name: name.trim() || trimmedEmail,
+
+      if (authUser && hasSupabase()) {
+        let profileImageUrl = null;
+        if (userType === "agent" && photoFile) {
+          const ext = photoFile.name.split(".").pop() || "jpg";
+          const path = `${authUser.id}/profile-${Date.now()}.${ext}`;
+          const contentType = photoFile.type || (path.endsWith(".png") ? "image/png" : "image/jpeg");
+          const { error: uploadErr } = await supabase.storage
+            .from(AGENT_ASSETS_BUCKET)
+            .upload(path, photoFile, { cacheControl: "3600", upsert: true, contentType });
+          if (!uploadErr) {
+            const { data: urlData } = supabase.storage.from(AGENT_ASSETS_BUCKET).getPublicUrl(path);
+            profileImageUrl = urlData?.publicUrl ?? null;
+          }
+        }
+        const signUpData = {
+          name: fullName,
+          email: trimmedEmail,
+          phone: phone?.trim() || undefined,
+          user_type: userType || "user",
+          ...(userType === "agent" && {
+            brokerage: brokerage?.trim() || undefined,
+            profile_image_url: profileImageUrl,
+          }),
+        };
+        const { error: usersErr } = await supabase.from("users").upsert(
+          { user_id: authUser.id, data: signUpData, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
+        if (usersErr) {
+          console.warn("users upsert:", usersErr.message);
+          setError("Account created but profile could not be saved: " + usersErr.message);
+        }
+        if (userType === "agent") {
+          const agentData = {
+            display_name: fullName || trimmedEmail,
             brokerage: brokerage?.trim() || null,
             email: trimmedEmail,
             phone: phone?.trim() || null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
+            profile_image_url: profileImageUrl || null,
+            ...(profileImageUrl && { media: [profileImageUrl] }),
+          };
+          const { data: existingAgent } = await supabase
+            .from("agents").select("code").eq("user_id", authUser.id).maybeSingle();
+          const needsCode = !existingAgent?.code;
+          const generatedCode = needsCode ? generateClientAgentCode(fullName || trimmedEmail) : undefined;
+          const { error: agentsErr } = await supabase.from("agents").upsert(
+            {
+              user_id: authUser.id,
+              data: agentData,
+              updated_at: new Date().toISOString(),
+              ...(needsCode && generatedCode ? { code: generatedCode } : {}),
+            },
+            { onConflict: "user_id" }
+          );
+          if (agentsErr) {
+            console.warn("agents upsert:", agentsErr.message);
+            setError("Account created but agent profile could not be saved: " + agentsErr.message);
+          }
+        }
       }
-      if (data?.session) {
+      if (authSession) {
         onSuccess?.();
-      } else {
+      } else if (authUser) {
         setMessage("Check your email to confirm your account, then sign in.");
         setMode("signin");
         setUserType(null);
@@ -144,11 +232,9 @@ export default function AuthModal({ onClose, onSuccess }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
-      onClick={onClose}
     >
       <div
         className="relative w-full max-w-md rounded-3xl border border-border bg-surface-elevated p-8 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
@@ -170,8 +256,8 @@ export default function AuthModal({ onClose, onSuccess }) {
             : mode === "signup" && userType === null
               ? "Are you signing up as a user or as a broker/agent?"
               : userType === "user"
-                ? "Create your account with name, email, phone and password."
-                : "Create your broker/agent account with name, email, phone, brokerage chosen name and password."}
+                ? "Create your account with first name, last name, email, phone and password."
+                : "Create your broker/agent account with first name, last name, email, phone, brokerage chosen name, and a photo of yourself."}
         </p>
 
         {mode === "signup" && userType === null ? (
@@ -179,7 +265,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={() => { setUserType("user"); setError(null); }}
+                onClick={() => { setUserType("user"); setError(null); setPhotoFile(null); setPhotoPreview(null); }}
                 className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -192,7 +278,7 @@ export default function AuthModal({ onClose, onSuccess }) {
               </button>
               <button
                 type="button"
-                onClick={() => { setUserType("agent"); setError(null); }}
+                onClick={() => { setUserType("agent"); setError(null); setPhotoFile(null); setPhotoPreview(null); }}
                 className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -215,7 +301,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             {mode === "signup" && userType !== null && (
               <button
                 type="button"
-                onClick={() => { setUserType(null); setError(null); }}
+                onClick={() => { setUserType(null); setError(null); setFirstName(""); setLastName(""); setPhotoFile(null); setPhotoPreview(null); }}
                 className="text-sm text-muted hover:text-foreground"
               >
                 ← Back
@@ -223,20 +309,37 @@ export default function AuthModal({ onClose, onSuccess }) {
             )}
             {mode === "signup" && userType !== null && (
               <>
-                <div>
-                  <label htmlFor="auth-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="auth-name"
-                    type="text"
-                    autoComplete="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={inputClass}
-                    placeholder="Your name"
-                    disabled={loading}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="auth-first-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                      First name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="auth-first-name"
+                      type="text"
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className={inputClass}
+                      placeholder="Jane"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="auth-last-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                      Last name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="auth-last-name"
+                      type="text"
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className={inputClass}
+                      placeholder="Smith"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="auth-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
@@ -271,20 +374,6 @@ export default function AuthModal({ onClose, onSuccess }) {
                 </div>
                 {userType === "agent" && (
                   <>
-                    <div>
-                      <label htmlFor="auth-agent-code" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                        Agent code (optional)
-                      </label>
-                      <input
-                        id="auth-agent-code"
-                        type="text"
-                        value={agentCode}
-                        onChange={(e) => setAgentCode(e.target.value)}
-                        className={inputClass}
-                        placeholder="e.g. ABC123 — users can find you by this"
-                        disabled={loading}
-                      />
-                    </div>
                     <div>
                       <label htmlFor="auth-brokerage" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
                         Brokerage chosen name <span className="text-red-500">*</span>
@@ -326,17 +415,32 @@ export default function AuthModal({ onClose, onSuccess }) {
                   <label htmlFor="auth-password" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
                     Password
                   </label>
-                  <input
-                    id="auth-password"
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
-                    placeholder="Your password"
-                    disabled={loading}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      id="auth-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={inputClass + " pr-12"}
+                      placeholder="Your password"
+                      disabled={loading}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted hover:bg-surface hover:text-foreground"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -345,16 +449,57 @@ export default function AuthModal({ onClose, onSuccess }) {
                 <label htmlFor="auth-password" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="auth-password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder="At least 6 characters"
-                  disabled={loading}
-                />
+                <div className="relative">
+                  <input
+                    id="auth-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={inputClass + " pr-12"}
+                    placeholder="At least 6 characters"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted hover:bg-surface hover:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mode === "signup" && userType === "agent" && (
+              <div>
+                <label htmlFor="auth-agent-photo" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                  Your photo <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  {photoPreview && (
+                    <img src={photoPreview} alt="You" className="h-16 w-16 rounded-full object-cover border border-border" />
+                  )}
+                  <input
+                    id="auth-agent-photo"
+                    type="file"
+                    accept="image/*"
+                    className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:cursor-pointer hover:file:opacity-90"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      setPhotoFile(f || null);
+                      setPhotoPreview(f ? URL.createObjectURL(f) : null);
+                    }}
+                    disabled={loading}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-muted">Required — add a picture of yourself. You can change it later in Dashboard → Customize.</p>
               </div>
             )}
 

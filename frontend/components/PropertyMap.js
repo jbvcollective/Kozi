@@ -154,8 +154,17 @@ export default function PropertyMap({ properties = [], onSelectProperty }) {
     };
   }, [properties]);
 
+  const list = Array.isArray(properties) ? properties : [];
+  const hasAnyCoords = list.some((p) => p != null && p.lat != null && p.lng != null);
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-gray-50">
+      {list.length > 0 && !hasAnyCoords && (
+        <div className="absolute top-4 left-1/2 z-[1000] -translate-x-1/2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center shadow-lg">
+          <p className="text-sm font-bold text-amber-900">No listing locations on map</p>
+          <p className="mt-1 text-xs text-amber-800">Listings need latitude/longitude. Run a fresh sync so the feed can populate coordinates, then reload.</p>
+        </div>
+      )}
       <div ref={mapContainerRef} className="h-full w-full" />
       <style
         dangerouslySetInnerHTML={{

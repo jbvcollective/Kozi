@@ -2,33 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatBeds } from "@/lib/propertyUtils";
+import { formatBeds, formatDaysOnMarket } from "@/lib/propertyUtils";
 import { prefetchListingById } from "@/lib/api";
 import { useChosenAgent } from "@/context/ChosenAgentContext";
-
-const STATUS_STYLES = {
-  Active: "bg-black/40 text-white",
-  Sold: "bg-gray-400 text-white",
-  "Deal Fell Through": "bg-red-600 text-white animate-pulse shadow-lg",
-  "Price Reduced": "bg-orange-500 text-white",
-  New: "bg-green-600 text-white",
-};
+import { useLinkedAgent } from "@/context/LinkedAgentContext";
+import { useAgentPro } from "@/hooks/useAgentPro";
 
 export default function PropertyCard({ property, isSaved, onToggleSave, onClick, href }) {
   const { chosenAgent } = useChosenAgent();
+  const { linkedAgent } = useLinkedAgent();
+  const { hasAgentPro, selfAgentProfile } = useAgentPro();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const displayBrokerage = chosenAgent?.brokerage ?? property.listingBrokerage;
+  // Only override with agent info when they have paid (Agent Pro); otherwise use listing's agent.
+  const useLinkedAsAgent = linkedAgent?.hasAgentPro && linkedAgent?.name;
+  const useChosenAsAgent = chosenAgent?.hasAgentPro && chosenAgent?.agentName;
+  const useSelfAsAgent = hasAgentPro && selfAgentProfile?.name;
+  const displayAgent = useLinkedAsAgent ? linkedAgent.name : useChosenAsAgent ? chosenAgent.agentName : useSelfAsAgent ? selfAgentProfile.name : property.listingAgent;
+  const displayBrokerage = useLinkedAsAgent ? linkedAgent.brokerage : useChosenAsAgent ? chosenAgent.brokerage : useSelfAsAgent ? selfAgentProfile.brokerage : property.listingBrokerage;
 
   const images = property.images || [property.image].filter(Boolean);
   const currentImage = images[currentImageIndex] || images[0] || property.image;
-  const status = property.status || "Active";
   const isReduced = property.originalPrice && property.price < property.originalPrice;
   const reductionAmount = isReduced ? property.originalPrice - property.price : 0;
   const reductionPercent = isReduced && property.originalPrice
     ? Math.round((reductionAmount / property.originalPrice) * 100)
     : 0;
-  const statusClass = STATUS_STYLES[status] || STATUS_STYLES.Active;
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -52,8 +51,8 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
 
   const content = (
     <>
-      {/* Full-Width Photo Gallery */}
-      <div className="relative aspect-[3/2] overflow-hidden bg-surface shimmer-bg">
+      {/* Full-Width Photo Gallery – fixed aspect for consistent card width/height */}
+      <div className="relative aspect-[3/2] shrink-0 overflow-hidden bg-surface shimmer-bg">
         {currentImage ? (
           <img
             src={currentImage}
@@ -66,23 +65,23 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
           <div className="flex h-full items-center justify-center text-gray-400">No photo</div>
         )}
 
-        {/* Navigation Overlays */}
+        {/* Navigation Overlays: visible on touch (mobile), hover on desktop */}
         {images.length > 1 && (
-          <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-between px-2 sm:px-4 opacity-100 sm:opacity-0 transition-opacity group-hover:opacity-100">
             <button
               type="button"
               onClick={prevImage}
-              className="rounded-full bg-white/20 p-3 text-white backdrop-blur-xl transition-premium hover:bg-white hover:text-foreground"
+              className="rounded-full bg-white/20 min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 sm:p-3 text-white backdrop-blur-xl transition-premium hover:bg-white hover:text-foreground active:scale-95"
               aria-label="Previous photo"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               type="button"
               onClick={nextImage}
-              className="rounded-full bg-white/20 p-3 text-white backdrop-blur-xl transition-premium hover:bg-white hover:text-foreground"
+              className="rounded-full bg-white/20 min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 sm:p-3 text-white backdrop-blur-xl transition-premium hover:bg-white hover:text-foreground active:scale-95"
               aria-label="Next photo"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,11 +91,8 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
           </div>
         )}
 
-        {/* Status Badge */}
+        {/* Badges: price drop and open house only (no status) */}
         <div className="pointer-events-none absolute left-4 top-4 flex flex-col gap-2">
-          <span className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm backdrop-blur-md ${statusClass}`}>
-            {status}
-          </span>
           {isReduced && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-orange-600 shadow-sm backdrop-blur-md">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -136,29 +132,30 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
         )}
       </div>
 
-      {/* Content Section */}
-      <div className="flex flex-col space-y-5 p-8">
+      {/* Content Section – fixed min height so all cards align in grid */}
+      <div className="flex min-h-[240px] flex-col space-y-5 p-8">
         <div className="space-y-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <span className="text-4xl font-black tracking-tighter text-foreground">
               ${(property.price ?? 0).toLocaleString()}
               {property.priceIsMonthly && <span className="text-lg font-bold text-muted">/mo</span>}
             </span>
-            {!property.priceIsMonthly && isReduced && (
+            {isReduced && (
               <>
                 <span className="text-sm font-bold text-muted line-through">
                   ${property.originalPrice.toLocaleString()}
+                  {property.priceIsMonthly && <span className="text-muted">/mo</span>}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-2 py-0.5 text-xs font-black text-orange-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
-                  −${reductionAmount.toLocaleString()} ({reductionPercent}%)
+                  −{reductionPercent}%
                 </span>
               </>
             )}
           </div>
-          <p className="truncate text-lg font-bold leading-tight text-foreground">{property.location}</p>
+          <p className="min-h-[4.25rem] text-lg font-bold leading-tight text-foreground break-words line-clamp-4" title={property.location}>{property.location}</p>
         </div>
 
         {/* Quick Stats Bar: housing = Beds, Baths, Garage; rentals = Beds, Baths, Sqft */}
@@ -176,7 +173,9 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
           {property.priceIsMonthly ? (
             <div className="flex items-center space-x-1 whitespace-nowrap">
               <span className="text-sm font-black text-foreground">
-                {property.sqft != null ? property.sqft.toLocaleString() : "—"}
+                {property.livingAreaRange
+                  ? (property.livingAreaRange.includes("sq ft") ? property.livingAreaRange : `${property.livingAreaRange} sq ft`)
+                  : (property.sqft != null && property.sqft > 0) ? property.sqft.toLocaleString() : "—"}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Sqft</span>
             </div>
@@ -194,14 +193,30 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
             <span className="rounded bg-surface px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted">
               {property.type || "Property"}
             </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted">
-              {property.daysOnMarket === 0 || property.daysOnMarket == null ? "Just Listed" : `${property.daysOnMarket}d ago`}
+            <span
+              className={
+                formatDaysOnMarket({ listedAt: property.listedAt, daysOnMarket: property.daysOnMarket }) === "Just Listed"
+                  ? "rounded-md bg-emerald-500/15 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-400"
+                  : "rounded-md bg-amber-500/12 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+              }
+              title="Days on market"
+            >
+              {formatDaysOnMarket({ listedAt: property.listedAt, daysOnMarket: property.daysOnMarket })}
             </span>
           </div>
-          {displayBrokerage && (
-            <p className="text-[10px] font-medium text-muted truncate" title={displayBrokerage}>
-              {displayBrokerage}
-            </p>
+          {(displayAgent || displayBrokerage) && (
+            <div className="flex flex-col gap-0.5">
+              {displayAgent && (
+                <p className="text-[11px] font-bold text-error truncate" title={displayAgent}>
+                  {displayAgent}
+                </p>
+              )}
+              {displayBrokerage && (
+                <p className="text-[10px] font-medium text-muted truncate" title={displayBrokerage}>
+                  {displayBrokerage}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -209,7 +224,7 @@ export default function PropertyCard({ property, isSaved, onToggleSave, onClick,
   );
 
   const className =
-    "group animate-fade-in flex cursor-pointer flex-col overflow-hidden card card-hover border-border bg-surface-elevated transition-premium";
+    "group animate-fade-in flex h-full min-h-[520px] cursor-pointer flex-col overflow-hidden card card-hover border-border bg-surface-elevated transition-premium";
 
   const handlePrefetch = () => {
     if (property?.id && href?.startsWith?.("/listings/")) prefetchListingById(property.id);

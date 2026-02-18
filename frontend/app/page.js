@@ -11,7 +11,7 @@ export default function Home() {
   const handleSearch = (query) => {
     if (!query?.trim()) return;
     setIsProcessing(true);
-    // Simulate consulting "Lumina Intelligence" then navigate to Explore with query
+    // Simulate consulting "Kozi Intelligence" then navigate to Explore with query
     setTimeout(() => {
       const params = new URLSearchParams({ q: query.trim() });
       router.push(`/explore?${params.toString()}`);

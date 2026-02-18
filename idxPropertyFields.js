@@ -27,7 +27,7 @@ export const IDX_PROPERTY_FIELDS = [
   "IndustrialArea", "IndustrialAreaCode", "InsuranceExpense", "InteriorFeatures",
   "InternetAddressDisplayYN", "InternetEntireListingDisplayYN", "IslandYN", "KitchensAboveGrade", "KitchensBelowGrade",
   "KitchensTotal", "LaundryFeatures", "LeaseToOwnEquipment", "LeasedLandFee", "LeasedTerms", "LegalStories",
-  "LinkProperty", "LinkYN", "ListAOR", "ListOfficeKey", "ListOfficeName", "ListPrice", "ListPriceUnit",
+  "Latitude", "Longitude", "LinkProperty", "LinkYN", "ListAOR", "ListOfficeKey", "ListOfficeName", "ListPrice", "ListPriceUnit",
   "LivingAreaRange", "LocalImprovements", "LocalImprovementsComments", "Locker", "LockerLevel", "LockerNumber", "LockerUnit",
   "LotDepth", "LotDimensionsSource", "LotFeatures", "LotIrregularities", "LotShape", "LotSizeArea", "LotSizeAreaUnits",
   "LotSizeRangeAcres", "LotSizeSource", "LotSizeUnits", "LotType", "LotWidth", "MaximumRentalMonthsTerm",

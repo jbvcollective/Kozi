@@ -7,28 +7,18 @@ const inputClass =
   "w-full rounded-xl border border-border bg-surface-elevated px-4 py-3 text-foreground placeholder-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function ChooseAgentModal({ onClose, onSave, initialAgent }) {
-  const [agents, setAgents] = useState([]);
-  const [agentsLoading, setAgentsLoading] = useState(true);
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const [showManual, setShowManual] = useState(false);
   const [agentCode, setAgentCode] = useState("");
-  const [agentName, setAgentName] = useState("");
-  const [brokerage, setBrokerage] = useState("");
-  const [agentPhone, setAgentPhone] = useState("");
-  const [agentEmail, setAgentEmail] = useState("");
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [paidAgents, setPaidAgents] = useState([]);
+  const [agentsLoading, setAgentsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (initialAgent) {
-      setAgentCode(initialAgent.agentCode ?? "");
-      setAgentName(initialAgent.agentName ?? "");
-      setBrokerage(initialAgent.brokerage ?? "");
-      setAgentPhone(initialAgent.phone ?? "");
-      setAgentEmail(initialAgent.email ?? "");
-    }
-  }, [initialAgent]);
+    if (initialAgent?.agentCode) setAgentCode(initialAgent.agentCode ?? "");
+  }, [initialAgent?.agentCode]);
 
+  // Load agents who are signed up and paid (Agent Pro) for the "choose from list" option
   useEffect(() => {
     if (!hasSupabase()) {
       setAgentsLoading(false);
@@ -36,73 +26,113 @@ export default function ChooseAgentModal({ onClose, onSave, initialAgent }) {
     }
     let cancelled = false;
     supabase
-      .from("auth_agents_with_type")
-      .select("user_id, agent_code, display_name, brokerage, phone, email")
-      .order("display_name")
+      .from("agents")
+      .select("id, user_id, code, data, is_paid")
       .then(({ data, error: e }) => {
-        if (!cancelled && !e && data) setAgents(data);
-        if (!cancelled) setAgentsLoading(false);
+        if (cancelled || e) {
+          if (!cancelled) setAgentsLoading(false);
+          return;
+        }
+        const paid = (data || []).filter((a) => !!(a.is_paid || (a.data || {}).agent_pro_subscribed_at));
+        setPaidAgents(paid);
+        setAgentsLoading(false);
       });
     return () => { cancelled = true; };
   }, []);
 
   const handleSelectFromList = (agent) => {
     setSelectedAgent(agent);
-    setShowManual(false);
+    setAgentCode("");
     setError(null);
   };
 
-  const handleUseManual = () => {
+  const handleCodeChange = (value) => {
+    setAgentCode(value);
     setSelectedAgent(null);
-    setShowManual(true);
     setError(null);
+  };
+
+  const saveAgent = async (agentPayload) => {
+    const result = await onSave(agentPayload);
+    if (result?.error) {
+      const msg = result.error?.message ?? (typeof result.error === "string" ? result.error : "Failed to save. Try again.");
+      setError(msg);
+      return false;
+    }
+    onClose();
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    if (!hasSupabase()) {
+      setError("Service not configured. Try again later.");
+      return;
+    }
+
+    // Option 1: User selected an agent from the list (paid agents)
     if (selectedAgent) {
+      const d = selectedAgent.data || {};
       setLoading(true);
-      const result = await onSave({
-        agentCode: selectedAgent.agent_code ?? null,
-        agentName: selectedAgent.display_name ?? "",
-        brokerage: selectedAgent.brokerage ?? null,
-        phone: selectedAgent.phone ?? null,
-        email: selectedAgent.email ?? null,
+      const ok = await saveAgent({
+        agentId: selectedAgent.user_id ?? null,
+        agentCode: selectedAgent.code ?? null,
+        agentName: (d.display_name || "").trim() || "Agent",
+        brokerage: d.brokerage ?? null,
+        phone: d.phone ?? null,
+        email: d.email ?? null,
       });
       setLoading(false);
-      if (result?.error) {
-        const msg = result.error?.message ?? (typeof result.error === "string" ? result.error : "Failed to save. Try again.");
-        setError(msg);
-        return;
-      }
-      onClose();
       return;
     }
-    const name = agentName?.trim();
-    if (!name) {
-      setError("Agent name is required.");
+
+    // Option 2: User entered an agent code — validate against agents table (case-insensitive)
+    const rawCode = agentCode?.trim();
+    if (!rawCode) {
+      setError("Enter your agent code or choose an agent below.");
       return;
     }
-    setLoading(true);
-    const result = await onSave({
-      agentCode: agentCode?.trim() || null,
-      agentName: name,
-      brokerage: brokerage?.trim() || null,
-      phone: agentPhone?.trim() || null,
-      email: agentEmail?.trim() || null,
-    });
-    setLoading(false);
-    if (result?.error) {
-      const msg = result.error?.message ?? (typeof result.error === "string" ? result.error : "Failed to save. Try again.");
+    const codeUpper = rawCode.toUpperCase();
+    let row = null;
+    let fetchError = null;
+    const { data: byUpper, error: e1 } = await supabase
+      .from("agents")
+      .select("id, user_id, code, data")
+      .eq("code", codeUpper)
+      .maybeSingle();
+    if (e1) fetchError = e1;
+    else if (byUpper) row = byUpper;
+    if (!row && !fetchError) {
+      const { data: byExact, error: e2 } = await supabase
+        .from("agents")
+        .select("id, user_id, code, data")
+        .eq("code", rawCode)
+        .maybeSingle();
+      if (e2) fetchError = e2;
+      else if (byExact) row = byExact;
+    }
+    if (fetchError || !row) {
+      const msg = fetchError?.message
+        ? `Couldn't look up agent: ${fetchError.message}`
+        : "No agent found with this code. Check for typos or ask your agent for the exact code.";
       setError(msg);
       return;
     }
-    onClose();
+    setLoading(true);
+    const d = row.data || {};
+    const ok = await saveAgent({
+      agentId: row.user_id ?? null,
+      agentCode: row.code ?? codeUpper ?? rawCode,
+      agentName: (d.display_name || "").trim() || "Agent",
+      brokerage: d.brokerage ?? null,
+      phone: d.phone ?? null,
+      email: d.email ?? null,
+    });
+    setLoading(false);
   };
 
-  const showingManualForm = showManual || (agents.length === 0 && !agentsLoading);
-  const canSave = selectedAgent || (showingManualForm && agentName?.trim());
+  const canSave = !!agentCode?.trim() || !!selectedAgent;
 
   return (
     <div
@@ -134,137 +164,76 @@ export default function ChooseAgentModal({ onClose, onSave, initialAgent }) {
           Your chosen agent will be shown on all listings. You can change this anytime.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {agentsLoading ? (
-            <div className="flex items-center gap-2 py-4 text-muted">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
-              <span className="text-sm">Loading agents…</span>
-            </div>
-          ) : agents.length > 0 ? (
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">Choose from registered agents</p>
-              <ul className="space-y-2 max-h-48 overflow-y-auto rounded-xl border border-border bg-surface p-2">
-                {agents.map((agent) => (
-                  <li key={agent.user_id}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectFromList(agent)}
-                          className={`w-full rounded-xl border-2 px-4 py-3 text-left transition-colors ${
-                            selectedAgent?.user_id === agent.user_id
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-primary/50"
-                          }`}
-                        >
-                      <span className="font-bold text-foreground">{agent.display_name}</span>
-                      {(agent.brokerage || agent.agent_code) && (
-                        <span className="mt-0.5 block text-xs text-muted">
-                          {[agent.brokerage, agent.agent_code].filter(Boolean).join(" · ")}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={handleUseManual}
-                className="mt-2 text-sm text-muted hover:text-foreground underline"
-              >
-                Or enter agent details manually
-              </button>
-            </div>
-          ) : (
-            <p className="text-sm text-muted">No registered agents yet. Enter details manually below.</p>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Have an agent code */}
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">Have an agent code?</p>
+            <input
+              id="agent-code"
+              type="text"
+              value={agentCode}
+              onChange={(e) => handleCodeChange(e.target.value.toUpperCase())}
+              className={inputClass}
+              placeholder="8 digit key"
+              disabled={loading}
+              autoFocus
+            />
+          </div>
 
-          {showingManualForm && (
-            <div className="space-y-4 rounded-xl border border-border bg-surface p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-muted">Agent details</p>
-              <div>
-                <label htmlFor="agent-code" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                  Agent code (optional)
-                </label>
-                <input
-                  id="agent-code"
-                  type="text"
-                  value={agentCode}
-                  onChange={(e) => setAgentCode(e.target.value)}
-                  className={inputClass}
-                  placeholder="e.g. from your agent"
-                  disabled={loading}
-                />
+          {/* Don't have a code: list of paid agents */}
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">Don&apos;t have a code? Choose an agent</p>
+            {agentsLoading ? (
+              <div className="flex items-center gap-2 py-4 text-muted">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+                <span className="text-sm">Loading agents…</span>
               </div>
-              <div>
-                <label htmlFor="agent-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                  Agent name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="agent-name"
-                  type="text"
-                  value={agentName}
-                  onChange={(e) => setAgentName(e.target.value)}
-                  className={inputClass}
-                  placeholder="Agent full name"
-                  disabled={loading}
-                  required={showManual || agents.length === 0}
-                />
-              </div>
-              <div>
-                <label htmlFor="agent-brokerage" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                  Brokerage chosen (optional)
-                </label>
-                <input
-                  id="agent-brokerage"
-                  type="text"
-                  value={brokerage}
-                  onChange={(e) => setBrokerage(e.target.value)}
-                  className={inputClass}
-                  placeholder="Brokerage chosen name"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label htmlFor="agent-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                  Phone (optional)
-                </label>
-                <input
-                  id="agent-phone"
-                  type="tel"
-                  value={agentPhone}
-                  onChange={(e) => setAgentPhone(e.target.value)}
-                  className={inputClass}
-                  placeholder="Agent phone"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label htmlFor="agent-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
-                  Email (optional)
-                </label>
-                <input
-                  id="agent-email"
-                  type="email"
-                  value={agentEmail}
-                  onChange={(e) => setAgentEmail(e.target.value)}
-                  className={inputClass}
-                  placeholder="Agent email"
-                  disabled={loading}
-                />
-              </div>
-              {agents.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => { setShowManual(false); setSelectedAgent(null); }}
-                  className="text-sm text-muted hover:text-foreground underline"
-                >
-                  ← Back to agent list
-                </button>
-              )}
-            </div>
-          )}
+            ) : paidAgents.length === 0 ? (
+              <p className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted">
+                No agents available to choose from yet. Enter your agent&apos;s code above if you have one.
+              </p>
+            ) : (
+              <ul className="space-y-2 max-h-48 overflow-y-auto rounded-xl border border-border bg-surface p-2">
+                {paidAgents.map((agent) => {
+                  const d = agent.data || {};
+                  const name = (d.display_name || "").trim() || "Agent";
+                  const brokerage = (d.brokerage || "").trim() || null;
+                  const photoUrl = d.profile_image_url || null;
+                  const isSelected = selectedAgent?.user_id === agent.user_id;
+                  return (
+                    <li key={agent.user_id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectFromList(agent)}
+                        className={`flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-colors ${
+                          isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 hover:bg-surface-elevated"
+                        }`}
+                      >
+                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-elevated">
+                          {photoUrl ? (
+                            <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center text-lg font-bold text-muted">
+                              {name.charAt(0).toUpperCase() || "?"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-bold text-foreground">{name}</span>
+                          {brokerage && (
+                            <span className="mt-0.5 block text-xs text-muted">{brokerage}</span>
+                          )}
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
 
           {error && (
-            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
+            <p className="rounded-xl bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-400" role="alert">
               {error}
             </p>
           )}

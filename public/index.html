@@ -141,8 +141,8 @@
       const sourceEl = document.getElementById('source');
       sourceEl.textContent = source || '';
       if (listingsData.length === 0) {
-        sourceEl.textContent = 'No listings. Run npm run sync-with-limit -- 2000 then refresh.';
-        app.innerHTML = '<div class="loading">No listings. Run <code>npm run sync-with-limit -- 2000</code>, then refresh.</div>';
+        sourceEl.textContent = 'No listings. Run npm run sync-watch to sync from PropTx, then refresh.';
+        app.innerHTML = '<div class="loading">No listings. Run <code>npm run sync-watch</code> to sync from PropTx, then refresh.</div>';
         return;
       }
       app.innerHTML = '<div class="grid">' + listingsData.map((row, listingIndex) => {

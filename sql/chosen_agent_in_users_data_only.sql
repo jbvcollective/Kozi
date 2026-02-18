@@ -1,0 +1,3 @@
+-- Chosen agent is stored in the user_chosen_agent table with ALL data in ONE JSONB column (data).
+-- Run sql/user_chosen_agent_one_jsonb.sql to create/update the table and RLS.
+-- When a user picks an agent or enters an agent code, the app saves one row: user_id + data (user_name, agent_id, agent_code, agent_name, brokerage, agent_phone, agent_email, theme).

@@ -1,4 +1,4 @@
-import { mapMergedToHouseSigma } from "./listingSchema";
+import { mapMergedToHouseSigma, normalizeCanadianPostalCode } from "./listingSchema";
 
 /**
  * Format beds for display: "4+1" when above/below grade, else total number.
@@ -11,6 +11,32 @@ export function formatBeds(property) {
   const below = property.bedsBelowGrade ?? 0;
   if ((above > 0 || below > 0) && Number.isFinite(above) && Number.isFinite(below)) return `${above}+${below}`;
   return property.beds ?? "—";
+}
+
+const MS_PER_HOUR = 60 * 60 * 1000;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+/**
+ * Format days-on-market for display: "Just Listed" (&lt; 1h), "Xh ago" (&lt; 24h), "Xd ago" (days).
+ * @param {{ listedAt?: number, daysOnMarket?: number }} options - listedAt = list date in ms (optional), daysOnMarket = fallback days
+ * @returns {string}
+ */
+export function formatDaysOnMarket(options = {}) {
+  const { listedAt, daysOnMarket } = options;
+  const now = Date.now();
+  if (listedAt != null && Number.isFinite(listedAt)) {
+    const elapsed = now - listedAt;
+    if (elapsed < MS_PER_HOUR) return "Just Listed";
+    if (elapsed < MS_PER_DAY) {
+      const hours = Math.floor(elapsed / MS_PER_HOUR);
+      return `${hours}h ago`;
+    }
+    const days = Math.floor(elapsed / MS_PER_DAY);
+    return `${days}d ago`;
+  }
+  const dom = daysOnMarket != null && Number.isFinite(daysOnMarket) ? Number(daysOnMarket) : null;
+  if (dom === 0 || dom === null) return "Just Listed";
+  return `${dom}d ago`;
 }
 
 /**
@@ -27,30 +53,56 @@ export function mapListingToProperty(row) {
     vow.Photos?.length ? vow.Photos :
     idx.photos?.length ? idx.photos : (vow.photos || []);
 
-  const address = [
+  const province = merged.Province || merged.StateOrProvince || merged.State;
+  const postalCodeRaw = merged.PostalCode;
+  const postalCode = postalCodeRaw && String(postalCodeRaw).trim() ? normalizeCanadianPostalCode(postalCodeRaw) : null;
+  const streetParts = [
     merged.StreetNumber,
+    merged.StreetDirPrefix,
     merged.StreetName,
     merged.StreetSuffix,
-    merged.UnitNumber ? `#${merged.UnitNumber}` : null,
-    merged.City,
-    merged.Province || merged.StateOrProvince || merged.State,
-  ]
-    .filter(Boolean)
-    .join(" ");
+    merged.StreetDirSuffix,
+  ].filter(Boolean);
+  const streetLine = streetParts.join(" ").trim();
+  const unitNumber = merged.UnitNumber ? String(merged.UnitNumber).trim() : null;
+  const buildingName = merged.BuildingName && String(merged.BuildingName).trim() ? String(merged.BuildingName).trim() : null;
+  const propType = String(merged.PropertyType || merged.PropertySubType || "").toLowerCase();
+  const isCondoOrApt = !!(
+    unitNumber ||
+    propType.includes("condo") ||
+    propType.includes("apartment") ||
+    propType.includes("apt") ||
+    propType.includes("multi")
+  );
+  // Condo/Apartment: Name, 123 Main St, Apt 4B, City, State, Zip
+  // House: Name, 123 Main St, City, State, Zip (no unit)
+  const unitLabel = isCondoOrApt && unitNumber ? `Apt ${unitNumber}` : null;
+  const addressStreetParts = [buildingName, streetLine, unitLabel].filter(Boolean);
+  const addressStreet = addressStreetParts.length ? addressStreetParts.join(", ") : null;
+  const city = merged.City ? String(merged.City).trim() : null;
+  const cityLineParts = [city, province, postalCode].filter(Boolean);
+  const cityLine = cityLineParts.length ? cityLineParts.join(", ") : null;
+  const address =
+    addressStreet && cityLine
+      ? `${addressStreet}, ${cityLine}`
+      : addressStreet || cityLine || [streetLine, unitLabel, city, province, postalCode].filter(Boolean).join(", ") || null;
 
   const listPrice = Number(merged.ListPrice || merged.ClosePrice || 0);
-  const originalPrice = Number(merged.OriginalListPrice || merged.ListPrice || 0);
+  const origList = Number(merged.OriginalListPrice || 0);
+  const prevList = Number(merged.PreviousListPrice || 0);
   const previousPrice = Number(merged.PreviousListPrice || merged.ListPrice || 0);
   const maintenance = Number(merged.AssociationFee || merged.MaintenanceFee || merged.CondoFee || 0);
   const taxes = Number(merged.TaxAnnualAmount || merged.Taxes || 0);
 
   // Days on market: use feed value, or compute from listing timestamps (OriginalEntryTimestamp = list date)
   let dom = Number(merged.DaysOnMarket ?? merged.DOM ?? merged.CDOM ?? NaN);
-  if (!Number.isFinite(dom) || dom < 0) {
-    const listDate = merged.OriginalEntryTimestamp ?? merged.ModificationTimestamp;
-    if (listDate) {
-      const ts = typeof listDate === "string" ? new Date(listDate).getTime() : (listDate && typeof listDate.getTime === "function" ? listDate.getTime() : NaN);
-      if (Number.isFinite(ts)) {
+  let listedAtMs = undefined;
+  const listDate = merged.OriginalEntryTimestamp ?? merged.ModificationTimestamp;
+  if (listDate) {
+    const ts = typeof listDate === "string" ? new Date(listDate).getTime() : (listDate && typeof listDate.getTime === "function" ? listDate.getTime() : NaN);
+    if (Number.isFinite(ts)) {
+      listedAtMs = ts;
+      if (!Number.isFinite(dom) || dom < 0) {
         const days = Math.floor((Date.now() - ts) / (24 * 60 * 60 * 1000));
         dom = Math.max(0, days);
       }
@@ -64,7 +116,7 @@ export function mapListingToProperty(row) {
   let status = "Active";
   if (currentStatus === "Sold" || (currentStatus === "" && (merged.ClosePrice && Number(merged.ClosePrice) > 0))) status = "Sold";
   else if (onMarket.includes(currentStatus) || !currentStatus) {
-    if (originalPrice > listPrice) status = "Price Reduced";
+    if (origList > listPrice || prevList > listPrice) status = "Price Reduced";
     else if (dom <= 3) status = "New";
   } else status = currentStatus || "Active";
 
@@ -90,6 +142,7 @@ export function mapListingToProperty(row) {
   const listingAgentPhone = merged.ListAgentPreferredPhone || merged.ListAgentDirectPhone || merged.ListAgentOfficePhone || merged.ListAgentCellPhone || merged.AgentPhone || null;
   const listingAgentEmail = merged.ListAgentEmail || merged.ListAgentPreferredEmail || merged.AgentEmail || null;
 
+  const hasPriceReduction = !!(origList > listPrice || prevList > listPrice);
   const isRental = (() => {
     const tt = String(merged.TransactionType ?? "").toLowerCase();
     const type = String(merged.PropertyType ?? merged.PropertySubType ?? "").toLowerCase();
@@ -119,9 +172,14 @@ export function mapListingToProperty(row) {
       : (merged.StreetName || "Architectural Sanctuary"),
     price: displayPrice,
     priceIsMonthly: priceIsMonthly,
-    originalPrice: originalPrice > listPrice ? originalPrice : undefined,
+    originalPrice: !isRental && hasPriceReduction ? Math.max(origList, prevList) : undefined,
     previousListPrice: previousPrice > listPrice ? previousPrice : undefined,
     location: address || "Global Portfolio",
+    addressStreet: addressStreet || undefined,
+    addressCity: city || undefined,
+    addressProvince: province && String(province).trim() ? String(province).trim() : undefined,
+    addressPostalCode: postalCode || undefined,
+    city: city || undefined,
     bedsAboveGrade: Number(merged.BedroomsAboveGrade ?? 0),
     bedsBelowGrade: Number(merged.BedroomsBelowGrade ?? 0),
     beds: (() => {
@@ -149,7 +207,21 @@ export function mapListingToProperty(row) {
       return out.length ? out : undefined;
     })(),
     parking: Number(merged.GarageSpaces || merged.ParkingSpaces || 0),
-    sqft: Number(merged.LivingArea || merged.BuildingAreaTotal || 0),
+    sqft: (() => {
+      const exact = Number(merged.LivingArea || merged.BuildingAreaTotal || 0);
+      if (exact > 0) return exact;
+      const rangeRaw = merged.LivingAreaRange != null ? String(merged.LivingAreaRange).trim() : "";
+      if (!rangeRaw) return 0;
+      const rangeMatch = rangeRaw.match(/^(\d{1,6})\s*-\s*(\d{1,6})$/);
+      if (rangeMatch) {
+        const low = Number(rangeMatch[1]);
+        const high = Number(rangeMatch[2]);
+        if (Number.isFinite(low) && Number.isFinite(high) && low <= high) return Math.round((low + high) / 2);
+      }
+      const single = Number(rangeRaw.replace(/\D/g, ""));
+      return Number.isFinite(single) && single > 0 ? single : 0;
+    })(),
+    livingAreaRange: (merged.LivingAreaRange != null && String(merged.LivingAreaRange).trim()) ? String(merged.LivingAreaRange).trim() : undefined,
     maintenance: maintenance > 0 ? maintenance : undefined,
     taxes: taxes > 0 ? taxes : undefined,
     type: merged.PropertyType || merged.PropertySubType || "Modernist",
@@ -157,9 +229,20 @@ export function mapListingToProperty(row) {
     images: photos.length > 0 ? photos : ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200"],
     description: merged.PublicRemarks || "Contact our advisors for private details on this exceptional listing.",
     amenities: Array.isArray(merged.ExteriorFeatures) ? merged.ExteriorFeatures : ["Concierge", "Architectural Design"],
-    lat: merged.Latitude != null && merged.Latitude !== "" ? Number(merged.Latitude) : undefined,
-    lng: merged.Longitude != null && merged.Longitude !== "" ? Number(merged.Longitude) : undefined,
+    lat: (() => {
+      const v = merged.Latitude ?? merged.latitude ?? merged.LATITUDE;
+      if (v == null || v === "") return undefined;
+      const n = Number(v);
+      return Number.isFinite(n) && n >= -90 && n <= 90 ? n : undefined;
+    })(),
+    lng: (() => {
+      const v = merged.Longitude ?? merged.longitude ?? merged.LONGITUDE;
+      if (v == null || v === "") return undefined;
+      const n = Number(v);
+      return Number.isFinite(n) && n >= -180 && n <= 180 ? n : undefined;
+    })(),
     daysOnMarket: dom,
+    listedAt: listedAtMs,
     status,
     openHouse: openHouse || undefined,
   };

@@ -132,7 +132,7 @@ export default function FilterSidebar({ isVisible, onFilterChange }) {
   if (!isVisible) return null;
 
   return (
-    <aside className="w-64 flex-shrink-0 pr-12 hidden md:block">
+    <aside className="w-full flex-shrink-0 lg:w-64 xl:w-72 pr-0 lg:pr-8">
       <div className="space-y-1 mb-10">
         {propertyTypes.map((cat) => (
           <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 
 function KPIBox({ label, value, subtitle }) {
   return (
@@ -9,6 +9,94 @@ function KPIBox({ label, value, subtitle }) {
         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>
         <div className="text-4xl font-black tracking-tighter text-black">{value}</div>
         <p className="text-[11px] font-bold uppercase tracking-tighter text-gray-300">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function AvgDomChart({ rows, title, subtitle }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !rows?.length || !canvasRef.current) return;
+    const sorted = [...rows]
+      .filter((r) => r.avg_dom != null && Number.isFinite(Number(r.avg_dom)))
+      .sort((a, b) => Number(b.avg_dom) - Number(a.avg_dom))
+      .slice(0, 14);
+    if (!sorted.length) return;
+    let cancelled = false;
+    import("chart.js/auto").then((module) => {
+      if (cancelled) return;
+      const Chart = module.default;
+      if (chartRef.current) chartRef.current.destroy();
+      const labels = sorted.map((r) => `${r.city_region || "—"} - ${r.property_sub_type || "—"}`);
+      const data = sorted.map((r) => Math.round(Number(r.avg_dom)));
+      const gridColor = "rgba(0, 0, 0, 0.08)";
+      const xMax = data.length ? Math.min(700, Math.ceil((Math.max(...data) * 1.1) / 100) * 100) : 700;
+      chartRef.current = new Chart(canvasRef.current, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Avg days on market",
+              data,
+              backgroundColor: "rgba(55, 65, 64, 0.85)",
+              borderColor: "rgba(55, 65, 64, 1)",
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.raw} days`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: { display: true, text: "Days" },
+              grid: { color: gridColor },
+              ticks: { font: { size: 11 }, maxTicksLimit: 8 },
+              max: xMax,
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { maxRotation: 0, autoSkip: false, font: { size: 11 }, color: "rgba(0, 0, 0, 0.7)" },
+            },
+          },
+        },
+      });
+    });
+    return () => {
+      cancelled = true;
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
+    };
+  }, [mounted, rows]);
+
+  if (!rows?.length) return null;
+  return (
+    <div className="rounded-[3rem] border border-gray-100 bg-white p-8 shadow-sm">
+      <h3 className="mb-2 text-2xl font-black tracking-tight text-gray-800">{title}</h3>
+      <p className="mb-6 text-sm font-normal text-gray-600">{subtitle}</p>
+      <div className="h-[380px] w-full rounded-2xl bg-[#faf9f7] px-2 pt-2">
+        {mounted && <canvas ref={canvasRef} />}
       </div>
     </div>
   );
@@ -86,14 +174,14 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
 
   if (!stats) {
     return (
-      <div className="py-32 px-8 pt-24 text-center md:px-12">
+      <div className="py-32 px-4 pt-24 text-center sm:px-6 md:px-8 lg:px-12">
         <h1 className="text-4xl font-black text-gray-200">No database records found.</h1>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] animate-fade-in px-8 pb-32 pt-24 md:px-12">
+    <div className="mx-auto max-w-[1600px] animate-fade-in px-4 pb-32 pt-24 sm:px-6 md:px-8 lg:px-12">
       {/* Real-Data Header */}
       <div className="mb-16 border-b border-gray-100 pb-12">
         <div className="mb-4 flex items-center space-x-3">
@@ -104,8 +192,8 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
         </div>
         <h1 className="text-8xl font-black leading-none tracking-tighter text-black">The Pulse.</h1>
         <p className="mt-4 max-w-2xl text-2xl font-medium leading-tight text-gray-400">
-          Granular statistics derived from our active database of{" "}
-          <span className="font-black text-black">{stats.totalCount}</span> architectural sanctuaries.
+          Live stats from our active database of{" "}
+          <span className="font-black text-black">{stats.totalCount}</span> listings across Canada.
         </p>
       </div>
 
@@ -164,8 +252,7 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
             </h3>
             <p className="font-medium leading-relaxed text-white/60">
               These figures are recalculated in real-time as properties enter and exit our unified
-              database. We provide 100% transparency on market liquidity within the Lumina
-              ecosystem.
+              database. We provide 100% transparency on market liquidity across our platform.
             </p>
           </div>
 
@@ -199,8 +286,8 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
             return (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 <KPIBox label="Month" value={last.year_month || "—"} subtitle="Latest period" />
-                <KPIBox label="Sold" value={String(last.sold_count ?? 0)} subtitle="Closed" />
-                <KPIBox label="New listings" value={String(last.new_listings_count ?? 0)} subtitle="Added" />
+                <KPIBox label="Sold" value={`${last.sold_count ?? 0} sales`} subtitle="Closed" />
+                <KPIBox label="New listings" value={`${last.new_listings_count ?? 0} listings`} subtitle="Added" />
                 <KPIBox
                   label="Median sold price"
                   value={last.median_sold_price != null ? `$${Math.round(Number(last.median_sold_price) / 1000)}K` : "—"}
@@ -223,21 +310,28 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
                 { key: "area_value", label: "Area" },
                 { key: "area_type", label: "Type" },
                 { key: "list_to_sale_ratio", label: "Ratio", render: (r) => (r.list_to_sale_ratio != null ? `${(Number(r.list_to_sale_ratio) * 100).toFixed(1)}%` : "—") },
-                { key: "sale_count", label: "Sales", render: (r) => r.sale_count ?? "—" },
+                { key: "sale_count", label: "Sales", render: (r) => (r.sale_count != null ? `${r.sale_count} sales` : "—") },
               ]}
               rows={analytics.list_to_sale ?? []}
             />
-            <AnalyticsTable
-              title="Avg days on market by type & region"
-              subtitle="By property type and city region. Source: analytics_avg_dom."
-              columns={[
-                { key: "city_region", label: "Region" },
-                { key: "property_sub_type", label: "Property type" },
-                { key: "avg_dom", label: "Avg DOM", render: (r) => (r.avg_dom != null ? `${Math.round(Number(r.avg_dom))} days` : "—") },
-                { key: "listing_count", label: "Listings", render: (r) => r.listing_count ?? "—" },
-              ]}
-              rows={analytics.avg_dom ?? []}
-            />
+            <div className="space-y-8">
+              <AvgDomChart
+                title="Avg days on market by type & region"
+                subtitle="By property type and city region. Source: analytics_avg_dom."
+                rows={analytics.avg_dom ?? []}
+              />
+              <AnalyticsTable
+                title="Avg DOM by type & region (data)"
+                subtitle="Same data as the chart above."
+                columns={[
+                  { key: "city_region", label: "Region" },
+                  { key: "property_sub_type", label: "Property type" },
+                  { key: "avg_dom", label: "Avg DOM", render: (r) => (r.avg_dom != null ? `${Math.round(Number(r.avg_dom))} days` : "—") },
+                  { key: "listing_count", label: "Listings", render: (r) => (r.listing_count != null ? `${r.listing_count} listings` : "—") },
+                ]}
+                rows={analytics.avg_dom ?? []}
+              />
+            </div>
           </div>
 
           <AnalyticsTable
@@ -247,7 +341,7 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
               { key: "area_value", label: "Area" },
               { key: "price_bracket", label: "Price bracket" },
               { key: "avg_dom", label: "Avg DOM", render: (r) => (r.avg_dom != null ? `${Math.round(Number(r.avg_dom))} days` : "—") },
-              { key: "listing_count", label: "Listings", render: (r) => r.listing_count ?? "—" },
+              { key: "listing_count", label: "Listings", render: (r) => (r.listing_count != null ? `${r.listing_count} listings` : "—") },
             ]}
             rows={analytics.avg_dom_by_price ?? []}
           />
@@ -272,9 +366,9 @@ export default function MarketAnalysis({ properties = [], analytics = null }) {
                     {(analytics.area_market_health ?? []).slice(0, 10).map((row, i) => (
                       <tr key={i} className="border-b border-gray-100">
                         <td className="py-3 pr-4 font-medium text-black">{row.area_value || "—"}</td>
-                        <td className="py-3 pr-4">{row.total_active ?? "—"}</td>
-                        <td className="py-3 pr-4">{row.new_this_month ?? "—"}</td>
-                        <td className="py-3 pr-4">{row.sold_this_month ?? "—"}</td>
+                        <td className="py-3 pr-4">{row.total_active != null ? `${row.total_active} listings` : "—"}</td>
+                        <td className="py-3 pr-4">{row.new_this_month != null ? `${row.new_this_month} new` : "—"}</td>
+                        <td className="py-3 pr-4">{row.sold_this_month != null ? `${row.sold_this_month} sales` : "—"}</td>
                         <td className="py-3 pr-4">
                           {row.median_list_price != null ? `$${Math.round(Number(row.median_list_price) / 1000)}K` : "—"}
                         </td>

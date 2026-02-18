@@ -5,27 +5,36 @@
   "type": "module",
   "scripts": {
     "sync": "node fetchAllListingsUnified.js && node syncSoldListings.js && node runAnalyticsAndOpenHouse.js && node backfillListingsUnifiedClean.js",
-    "sync-with-limit": "node runSyncWithLimit.js",
     "sync-watch": "node runSyncEvery30Mins.js",
     "clear-listings": "node clearListingsSupabase.js",
     "fetch-listings": "node fetchListings.js",
     "fetch-vow-listings": "node fetchVowListings.js",
     "fetch-all": "node fetchListings.js && node fetchVowListings.js",
     "serve": "node server.js",
-    "dev": "node server.js",
+    "dev": "nodemon server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "nodemon server.js",
     "fetch-unified": "node fetchAllListingsUnified.js",
     "sync-sold-listings": "node syncSoldListings.js",
     "analytics": "node computeMarketHeatAnalytics.js",
     "analytics-and-open-house": "node runAnalyticsAndOpenHouse.js",
-    "backfill-clean": "node backfillListingsUnifiedClean.js"
+    "backfill-clean": "node backfillListingsUnifiedClean.js",
+    "sync-google-places": "node scripts/syncGooglePlaces.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
     "dotenv": "^16.3.1",
     "express": "^4.22.1",
-    "stripe": "^17.4.0"
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
   }
 }

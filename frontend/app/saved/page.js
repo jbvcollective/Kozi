@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchListings } from "@/lib/api";
+import { fetchListingsByIds } from "@/lib/api";
 import { mapListingToProperty } from "@/lib/propertyUtils";
 import { useSaved } from "@/context/SavedContext";
 import SavedView from "@/components/SavedView";
@@ -24,11 +24,16 @@ function SavedPageContent() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchListings()
+    if (savedIds.length === 0) {
+      setProperties([]);
+      setLoading(false);
+      return;
+    }
+    fetchListingsByIds(savedIds)
       .then((rows) => {
         if (cancelled) return;
-        const all = (rows || []).map(mapListingToProperty);
-        setProperties(all.filter((p) => savedIds.includes(p.id)));
+        const mapped = (rows || []).map(mapListingToProperty);
+        setProperties(mapped);
       })
       .catch((e) => {
         if (!cancelled) setError(e.message);
@@ -49,12 +54,14 @@ function SavedPageContent() {
 
   if (error) {
     return (
-      <div className="px-8 pb-32 pt-24 md:px-12">
+      <div className="px-4 pb-32 pt-24 md:px-8 lg:px-12">
         <p className="font-semibold text-red-600">Error: {error}</p>
       </div>
     );
   }
 
-  return <SavedView properties={properties} onToggleSave={toggleSave} />;
+  return (
+    <SavedView properties={properties} onToggleSave={toggleSave} />
+  );
 }
 

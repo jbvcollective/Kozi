@@ -1,15 +1,71 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-function PricingSuccessContent() {
+const REDIRECT_SECONDS = 5;
+
+export default function PricingSuccessPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
+  const [countdown, setCountdown] = useState(REDIRECT_SECONDS);
+  const [status, setStatus] = useState("waiting");
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    if (!sessionId || status !== "waiting") return;
+
+    (async () => {
+      setStatus("verifying");
+      try {
+        const res = await fetch("/api/verify-agent-pro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+        const data = await res.json();
+        if (data.verified) {
+          setStatus("verified");
+        } else {
+          setErrorMsg(data.message || data.error || "Could not verify payment.");
+          setStatus("error");
+        }
+      } catch {
+        setErrorMsg("Network error while verifying payment.");
+        setStatus("error");
+      }
+    })();
+  }, [sessionId, status]);
+
+  useEffect(() => {
+    if (status !== "verified" && status !== "error") return;
+    if (countdown <= 0) {
+      router.push("/");
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, router, status]);
+
+  if (!sessionId) {
+    return (
+      <div className="mx-auto max-w-[600px] animate-fade-in px-8 pb-32 pt-24 text-center md:px-12">
+        <h1 className="text-3xl font-black tracking-tight text-foreground">No session found</h1>
+        <p className="mt-4 text-muted">
+          It looks like you arrived here without completing checkout.
+        </p>
+        <Link href="/pricing" className="mt-8 inline-block rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:opacity-90">
+          Back to pricing
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-[600px] animate-fade-in px-8 pb-32 pt-24 md:px-12 text-center">
+    <div className="mx-auto max-w-[600px] animate-fade-in px-8 pb-32 pt-24 text-center md:px-12">
       <div className="mb-6 flex justify-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -18,38 +74,37 @@ function PricingSuccessContent() {
         </div>
       </div>
       <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">
-        You&apos;re subscribed to Agent Pro
+        Welcome to Agent Pro
       </h1>
       <p className="mt-4 text-muted">
-        Thank you for subscribing. Your subscription is active and you can now use Agent Pro features.
+        Your payment is complete. Your name and contact info will now appear as the listing agent across all listings.
       </p>
-      {sessionId && (
-        <p className="mt-2 text-xs text-muted">
-          Session: {sessionId.slice(0, 24)}…
-        </p>
+      {status === "verifying" && (
+        <p className="mt-4 text-sm text-muted">Verifying your subscription...</p>
       )}
+      {status === "verified" && (
+        <p className="mt-4 text-sm font-semibold text-green-600">Subscription verified and activated!</p>
+      )}
+      {status === "error" && (
+        <p className="mt-4 text-sm text-red-500">{errorMsg}</p>
+      )}
+      <p className="mt-6 text-sm text-muted">
+        Redirecting in <strong className="text-foreground">{countdown}</strong> second{countdown !== 1 ? "s" : ""}...
+      </p>
       <div className="mt-10 flex flex-wrap justify-center gap-4">
         <Link
-          href="/pricing"
-          className="rounded-xl border-2 border-border bg-surface-elevated px-6 py-3 text-sm font-bold text-foreground hover:border-primary"
+          href="/dashboard/customize"
+          className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:opacity-90"
         >
-          Back to pricing
+          Customize your branding
         </Link>
         <Link
           href="/explore"
-          className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:opacity-90"
+          className="rounded-xl border-2 border-border bg-surface-elevated px-6 py-3 text-sm font-bold text-foreground hover:border-primary"
         >
           Explore listings
         </Link>
       </div>
     </div>
-  );
-}
-
-export default function PricingSuccessPage() {
-  return (
-    <Suspense fallback={<div className="mx-auto max-w-[600px] px-8 pb-32 pt-24 md:px-12 text-center animate-pulse text-muted">Loading…</div>}>
-      <PricingSuccessContent />
-    </Suspense>
   );
 }

@@ -8,6 +8,7 @@ import { haversineKm } from "@/lib/geo";
 import PropertyMap from "@/components/PropertyMap";
 import Loading from "@/components/Loading";
 import RequireAuth from "@/components/RequireAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useChosenAgent } from "@/context/ChosenAgentContext";
 
 const DEFAULT_CENTER = { lat: 43.6532, lng: -79.3832 };
@@ -45,7 +46,9 @@ export default function OpenHousesPage() {
 }
 
 function OpenHousesPageContent() {
-  const { openChooseAgentModal } = useChosenAgent();
+  const { user } = useAuth();
+  const { openChooseAgentModal, openClaimAsAgentModal } = useChosenAgent();
+  const isAgentOrBroker = user?.user_metadata?.user_type === "agent";
   const [listings, setListings] = useState([]);
   const [openHouseEvents, setOpenHouseEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,21 +140,28 @@ function OpenHousesPageContent() {
   const selected = selectedId ? withDistance.find((p) => p.id === selectedId) : null;
   const selectProperty = useCallback((property) => setSelectedId(property?.id ?? null), []);
 
+  // On mobile, ensure scroll is at top so the page header and "Coming soon" block are visible
+  useEffect(() => {
+    if (loading) return;
+    const wrapper = document.querySelector("[data-sidebar-content]");
+    if (wrapper && typeof wrapper.scrollTo === "function") wrapper.scrollTo({ top: 0, behavior: "auto" });
+  }, [loading]);
+
   if (loading) {
     return (
       <Loading
         variant="screen"
         size="md"
         message="Loading open houses..."
-        className="min-h-[60vh] px-8 pt-24 md:px-12"
+        className="min-h-[60vh] px-4 pt-24 md:px-6 md:pt-24 lg:px-8 xl:px-12"
       />
     );
   }
 
   return (
-    <div className="flex w-full flex-col animate-fade-in md:flex-row">
-      <aside className="flex w-full flex-col border-r border-gray-100 bg-white md:w-[420px] md:min-w-[380px]">
-        <div className="border-b border-gray-100 px-6 py-5">
+    <div className="flex min-h-0 w-full flex-col animate-fade-in md:flex-row md:h-[100dvh] md:max-h-[100dvh]" style={{ minHeight: "100dvh" }}>
+      <aside className="flex min-h-0 w-full flex-col border-r border-gray-100 bg-white md:w-[420px] md:min-w-[380px] md:max-h-[100dvh] pt-16 md:pt-0">
+        <div className="shrink-0 border-b border-gray-100 px-6 py-5">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-black tracking-tight text-black">Open Houses</h1>
             <button
@@ -170,18 +180,18 @@ function OpenHousesPageContent() {
               ? "Sorted by distance from your location"
               : "Enable location to sort by distance"}
           </p>
-          <p className="mt-0.5 text-xs text-gray-400">Data from Supabase (listings + open_house_events).</p>
         </div>
 
-        <div className="flex-1">
+        <div className="min-h-0 flex-1">
           {withDistance.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-              <p className="text-gray-500">No open houses in Supabase.</p>
-              <p className="mt-2 text-xs text-gray-400">
-                Add rows to <code className="rounded bg-gray-100 px-1">open_house_events</code> (run{" "}
-                <code className="rounded bg-gray-100 px-1">sql/open_house_events.sql</code>) or ensure listings have open house data in idx/vow.
+            <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 py-12 text-center pt-16 md:pt-20 md:min-h-0 md:py-20">
+              <h2 className="text-3xl font-black tracking-tight text-[var(--primary)] md:text-4xl">Coming soon</h2>
+              <p className="mt-4 max-w-md text-[var(--muted)]">
+                Open house listings will be available here shortly.
               </p>
-              <Link href="/explore" className="mt-4 text-sm font-bold text-black underline">Browse Explore</Link>
+              <Link href="/profile" className="btn-primary mt-8 inline-block rounded-xl px-6 py-3 text-sm font-bold">
+                Back to profile
+              </Link>
             </div>
           ) : (
             <ul className="divide-y divide-gray-50">
@@ -290,13 +300,13 @@ function OpenHousesPageContent() {
         </div>
       </aside>
 
-      <div className="relative flex-1 bg-gray-100">
+      <div className="relative min-h-0 flex-1 flex flex-col bg-gray-100">
         {locationError && (
           <div className="absolute left-4 top-4 z-[1000] rounded-xl bg-amber-50 px-4 py-2 text-xs font-bold text-amber-800 shadow-lg">
             Using default location. Enable location for “from you” distances.
           </div>
         )}
-        <div className="h-full w-full min-h-[400px]">
+        <div className="min-h-0 flex-1 w-full min-h-[400px]">
           <PropertyMap properties={withDistance} onSelectProperty={selectProperty} />
         </div>
 
@@ -313,7 +323,7 @@ function OpenHousesPageContent() {
                 </p>
                 <p className="text-xs text-gray-400">List price: ${(selected.price ?? 0).toLocaleString()}</p>
               </div>
-              <div className="flex shrink-0 gap-3">
+              <div className="flex shrink-0 gap-3 flex-wrap">
                 <Link
                   href={`/listings/${selected.id}`}
                   className="rounded-2xl bg-black px-8 py-3 text-sm font-black text-white transition-colors hover:bg-gray-800"

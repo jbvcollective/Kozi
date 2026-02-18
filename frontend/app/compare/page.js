@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { fetchListings } from "@/lib/api";
+import { fetchListingsByIds } from "@/lib/api";
 import { mapListingToProperty } from "@/lib/propertyUtils";
 import CompareView from "@/components/CompareView";
 import Loading from "@/components/Loading";
@@ -24,6 +24,7 @@ function ComparePageContent() {
   const router = useRouter();
   const idsParam = searchParams.get("ids") || "";
   const ids = idsParam ? idsParam.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const from = searchParams.get("from") || "";
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(!!ids.length);
@@ -38,11 +39,10 @@ function ComparePageContent() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchListings()
+    fetchListingsByIds(ids)
       .then((rows) => {
         if (cancelled) return;
-        const all = (rows || []).map(mapListingToProperty);
-        const selected = all.filter((p) => ids.includes(p.id));
+        const selected = (rows || []).map(mapListingToProperty);
         setProperties(selected);
       })
       .catch((e) => {
@@ -54,7 +54,7 @@ function ComparePageContent() {
     return () => { cancelled = true; };
   }, [idsParam]);
 
-  const handleBack = () => router.push("/explore");
+  const handleBack = () => router.push(from === "saved" ? "/saved" : "/explore");
 
   if (loading) {
     return (

@@ -12,7 +12,7 @@ const tools = [
     buttonLabel: "Open",
   },
   {
-    title: "Lumina Snap",
+    title: "Kozi Snap",
     description: "Concierge moving and logistics — white-glove relocation services",
     href: "/snap",
     color: "bg-black",
@@ -20,7 +20,7 @@ const tools = [
   },
   {
     title: "What is my home worth?",
-    description: "Get a free estimate for your property using Lumina AI",
+    description: "Get a free market-based estimate for your property",
     href: "/valuation",
     color: "bg-gray-100",
     textColor: "text-black",

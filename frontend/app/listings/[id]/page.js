@@ -57,14 +57,14 @@ function ListingDetailContent() {
         variant="screen"
         size="md"
         message="Loading listing..."
-        className="min-h-screen px-8 pt-24 md:px-12"
+        className="min-h-screen px-4 pt-24 md:px-6 md:pt-24 lg:px-8 xl:px-12"
       />
     );
   }
 
   if (error || !property) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-8 pt-24 md:px-12">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-24 md:px-6 md:pt-24 lg:px-8 xl:px-12">
         <p className="text-lg font-bold text-red-600">{error || "Not found"}</p>
         <button
           type="button"

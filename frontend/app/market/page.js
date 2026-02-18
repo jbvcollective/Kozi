@@ -44,7 +44,7 @@ function MarketPageContent() {
 
   if (loading) {
     return (
-      <div className="px-8 pt-24 md:px-12">
+      <div className="px-4 pt-24 md:px-6 md:pt-24 lg:px-8 xl:px-12">
         <div className="shimmer-bg mb-6 h-8 w-56 rounded-lg" />
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (

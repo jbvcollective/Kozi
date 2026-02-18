@@ -19,6 +19,25 @@
 
 - **Scripts:** `fetch-listings`, `fetch-unified`, `analytics`, etc. (all run with `node`).
 
+### Full sync (listings + everything related)
+
+To fetch new listings from PropTx and update **all related tables** in batches (no single huge query):
+
+```bash
+npm run sync
+```
+
+This runs in order:
+
+| Step | Script | What it updates |
+|------|--------|------------------|
+| 1 | `fetchAllListingsUnified.js` | **listings_unified** (PropTx → Supabase, upserts in batches of 500) |
+| 2 | `syncSoldListings.js` | **sold_listings** (reads `listings_unified` in batches, writes in batches) |
+| 3 | `runAnalyticsAndOpenHouse.js` | **analytics_*** tables + **open_house_events** |
+| 4 | `backfillListingsUnifiedClean.js` | **listings_unified_clean** (from `listings_unified` in batches) |
+
+All reads/writes use batch sizes (300–1000 rows) to avoid timeouts and keep payloads under ~2MB. Optional in `.env`: `UPSERT_BATCH_SIZE=500`, `SYNC_SOLD_BATCH_SIZE=500`.
+
 ## Frontend (Next.js)
 
 - **Framework:** Next.js (App Router), React.

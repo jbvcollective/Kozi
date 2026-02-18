@@ -38,30 +38,30 @@ export default function Settings({ embedded = false }) {
   };
 
   const content = (
-    <div className="space-y-12">
+    <div className={embedded ? "space-y-8" : "grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12"}>
       {sections.map((section) => (
         <section key={section.title}>
-          <h2 className="mb-6 text-xs font-bold uppercase tracking-widest text-muted">
+          <h2 className="mb-5 text-[11px] font-bold uppercase tracking-widest text-muted">
             {section.title}
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {section.items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-2xl border border-border bg-surface p-6"
+                className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md"
               >
-                <div>
+                <div className="min-w-0 flex-1">
                   <h3 className="font-bold text-foreground">{item.label}</h3>
-                  <p className="text-sm text-muted">{item.description}</p>
+                  <p className="mt-0.5 text-sm leading-snug text-muted">{item.description}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => toggleItem(section.title, item.id)}
-                  className={`relative h-6 w-12 shrink-0 rounded-full transition-colors ${item.active ? "bg-primary" : "bg-border"}`}
+                  className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${item.active ? "bg-primary" : "bg-border"}`}
                   aria-label={`${item.label}: ${item.active ? "on" : "off"}`}
                 >
-                  <div
-                    className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${item.active ? "left-7" : "left-1"}`}
+                  <span
+                    className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-200 ${item.active ? "translate-x-5" : "translate-x-0"}`}
                   />
                 </button>
               </div>
@@ -74,8 +74,8 @@ export default function Settings({ embedded = false }) {
 
   if (embedded) {
     return (
-      <div className="mt-12">
-        <h2 className="mb-8 text-2xl font-black tracking-tight text-foreground">Settings</h2>
+      <div className="rounded-2xl border border-border bg-surface/50 p-6 shadow-sm lg:p-8">
+        <h2 className="mb-6 text-2xl font-black tracking-tight text-foreground">Settings</h2>
         {content}
       </div>
     );

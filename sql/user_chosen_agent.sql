@@ -1,3 +1,4 @@
+-- Superseded by sql/user_chosen_agent_one_jsonb.sql (table with single JSONB column "data").
 -- Table used when a user saves their chosen agent. Stores user_id + agent details.
 -- Run this in Supabase SQL Editor if the table does not exist. RLS: users can only read/upsert their own row.
 

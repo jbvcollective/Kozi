@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatDaysOnMarket } from "@/lib/propertyUtils";
 
 function getAddress(row) {
   if (row.UnparsedAddress) return row.UnparsedAddress;
@@ -43,7 +44,11 @@ export default function ListingCard({ listing, index, isSaved, onToggleSave, onC
   const parking = listing.ParkingSpaces ?? listing.GarageParkingSpaces ?? listing.ParkingTotal ?? "—";
   const type = [listing.PropertyType, listing.PropertySubType].filter(Boolean).join(" · ") || "Property";
   const daysOnMarket = listing.DaysOnMarket != null ? parseInt(listing.DaysOnMarket, 10) : null;
-  const daysLabel = daysOnMarket === 0 || daysOnMarket === null ? "Just Listed" : `${daysOnMarket}d ago`;
+  const rawListDate = listing.OriginalEntryTimestamp ?? listing.ModificationTimestamp;
+  const listedAt = rawListDate != null
+    ? (typeof rawListDate === "string" ? new Date(rawListDate).getTime() : (typeof rawListDate?.getTime === "function" ? rawListDate.getTime() : NaN))
+    : undefined;
+  const daysLabel = formatDaysOnMarket({ listedAt: Number.isFinite(listedAt) ? listedAt : undefined, daysOnMarket });
 
   const currentImage = images[currentImageIndex] || images[0];
 
@@ -118,17 +123,14 @@ export default function ListingCard({ listing, index, isSaved, onToggleSave, onC
           </div>
         )}
 
-        {/* Status Badge */}
-        <div className="pointer-events-none absolute left-4 top-4 flex flex-col gap-2">
-          <span className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm backdrop-blur-md ${statusClass}`}>
-            {status}
-          </span>
-          {isReduced && status !== "Price Reduced" && (
+        {/* Price Drop Badge (no status) */}
+        {isReduced && (
+          <div className="pointer-events-none absolute left-4 top-4">
             <span className="rounded-full bg-white/90 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-red-600 shadow-sm backdrop-blur-md">
               Drop: -${reductionAmount.toLocaleString()}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Favorite Button */}
         {onToggleSave && (
@@ -175,7 +177,7 @@ export default function ListingCard({ listing, index, isSaved, onToggleSave, onC
               </span>
             )}
           </div>
-          <p className="truncate text-lg font-bold leading-tight text-gray-900">{location}</p>
+          <p className="text-lg font-bold leading-tight text-gray-900 break-words line-clamp-4" title={location}>{location}</p>
         </div>
 
         {/* Quick Stats Bar */}
@@ -208,7 +210,14 @@ export default function ListingCard({ listing, index, isSaved, onToggleSave, onC
               {type}
             </span>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
+          <span
+            className={
+              daysLabel === "Just Listed"
+                ? "rounded-md bg-emerald-500/15 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-400"
+                : "rounded-md bg-amber-500/12 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+            }
+            title="Days on market"
+          >
             {daysLabel}
           </span>
         </div>

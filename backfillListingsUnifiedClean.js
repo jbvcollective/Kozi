@@ -23,7 +23,9 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/** Read from listings_unified and write to listings_unified_clean in batches (300–1000 ideal). */
 const PAGE_SIZE = 500;
+const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 500, 100), 1000);
 
 /** Same as SQL trigger: strip keys where value is null or empty array []. */
 function stripNullAndEmptyArray(obj) {
@@ -59,12 +61,11 @@ async function run() {
 
   let ok = 0;
   let fail = 0;
-  const BATCH = 100;
   const MAX_RETRIES = 3;
   const isRetryable = (msg) => /fetch failed|timeout|ECONNRESET|ETIMEDOUT|ENOTFOUND|network/i.test(msg || "");
 
-  for (let i = 0; i < all.length; i += BATCH) {
-    const batch = all.slice(i, i + BATCH).map((row) => ({
+  for (let i = 0; i < all.length; i += UPSERT_BATCH_SIZE) {
+    const batch = all.slice(i, i + UPSERT_BATCH_SIZE).map((row) => ({
       listing_key: row.listing_key,
       idx: stripNullAndEmptyArray(row.idx ?? {}),
       vow: row.vow != null ? stripNullAndEmptyArray(row.vow) : null,
@@ -96,8 +97,9 @@ async function run() {
         }
       }
     }
-    if ((i + BATCH) % 500 === 0 || i + BATCH >= all.length) {
-      console.log("  ", Math.min(i + BATCH, all.length), "/", all.length);
+    const batchNum = Math.floor(i / UPSERT_BATCH_SIZE) + 1;
+    if (batchNum % 5 === 0 || i + UPSERT_BATCH_SIZE >= all.length) {
+      console.log("  Inserted batch", batchNum, "—", Math.min(i + UPSERT_BATCH_SIZE, all.length), "/", all.length);
     }
   }
 

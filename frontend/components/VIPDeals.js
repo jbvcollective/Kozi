@@ -1,219 +1,342 @@
 "use client";
 
-import Link from "next/link";
-import { MOCK_PERKS } from "@/constants/perks";
+import { useState, useEffect } from "react";
+import { addVipDeal, removeVipDeal } from "@/lib/api";
 
-export default function VIPDeals({ properties = [], onSelectProperty }) {
-  const propertyDeals = properties.filter(
-    (p) => p?.originalPrice && p?.originalPrice > p?.price
-  );
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800";
 
-  return (
-    <div className="mx-auto max-w-[1600px] animate-fade-in px-8 pb-32 pt-24 md:px-12">
-      {/* Immersive Header */}
-      <header className="mb-16 border-b border-gray-100 pb-12">
-        <div className="max-w-4xl">
-          <div className="mb-3 flex items-center space-x-3">
-            <div className="h-2 w-2 rounded-full bg-purple-600 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-600">
-              Privé Lifestyle Concierge
-            </span>
-          </div>
-          <h1 className="mb-4 text-7xl font-black leading-none tracking-tighter md:text-9xl">
-            Wonderland.
-          </h1>
-          <p className="max-w-2xl text-xl font-medium leading-tight text-gray-400 md:text-2xl">
-            Exclusive access to boutique shopping, elite dining, and high-adrenaline entertainment.{" "}
-            <span className="font-black text-black">Your membership is the key.</span>
-          </p>
-        </div>
-      </header>
+export default function VIPDeals({ deals = [], isAgent = false, onRefresh, chosenAgent }) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [offer, setOffer] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState(null);
+  const [error, setError] = useState(null);
+  const [addSuccess, setAddSuccess] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
 
-      {/* Main Bento Grid */}
-      <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-6">
-        {/* BIG HERO: Entertainment / Wonderland */}
-        <div className="group relative h-[500px] overflow-hidden rounded-[2.5rem] border border-gray-50 bg-gray-100 shadow-xl md:col-span-4 lg:col-span-4">
-          <img
-            src={MOCK_PERKS[1].image}
-            alt="Wonderland"
-            className="absolute inset-0 h-full w-full object-cover transition-all duration-1000 group-hover:rotate-1 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-10">
-            <div className="space-y-3">
-              <span className="w-fit rounded-full bg-white/20 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-md">
-                Featured Experience
-              </span>
-              <h2 className="text-5xl font-black tracking-tighter text-white md:text-7xl">
-                {MOCK_PERKS[1].brand}
-              </h2>
-              <p className="max-w-md text-lg font-medium text-white/70">{MOCK_PERKS[1].offer}</p>
-              <button
-                type="button"
-                className="mt-4 rounded-2xl bg-white px-10 py-4 font-black text-black shadow-2xl transition-all hover:scale-105 active:scale-95"
-              >
-                Claim VIP Pass
-              </button>
-            </div>
-          </div>
-        </div>
+  const hasChosenAgent = chosenAgent?.agentName != null && chosenAgent.agentName !== "";
+  const hasAgentId = !!chosenAgent?.agentId;
 
-        {/* SIDE PERK: Dining */}
-        <div className="group relative h-[500px] overflow-hidden rounded-[2.5rem] bg-black md:col-span-2 lg:col-span-2">
-          <img
-            src={MOCK_PERKS[0].image}
-            alt="Dining"
-            className="absolute inset-0 h-full w-full object-cover opacity-50 transition-opacity duration-500 group-hover:opacity-80"
-          />
-          <div className="absolute inset-0 flex flex-col justify-end p-10 text-white">
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">
-                Gastronomy
-              </span>
-              <h3 className="text-4xl font-black tracking-tighter">{MOCK_PERKS[0].brand}</h3>
-              <p className="text-base font-bold leading-tight text-white/60">{MOCK_PERKS[0].offer}</p>
-              <button
-                type="button"
-                className="w-full rounded-2xl border border-white/20 py-4 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white hover:text-black"
-              >
-                Priority Reservation
-              </button>
-            </div>
-          </div>
-        </div>
+  useEffect(() => {
+    if (!addSuccess) return;
+    const t = setTimeout(() => setAddSuccess(false), 5000);
+    return () => clearTimeout(t);
+  }, [addSuccess]);
 
-        {/* PROMINENT: THE WEEKLY DROP */}
-        <div className="group relative flex flex-col justify-between overflow-hidden rounded-[3rem] bg-purple-600 p-10 text-white md:col-span-4 lg:col-span-3">
-          <div className="relative z-10">
-            <div className="mb-6 flex items-center space-x-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">
-                Limited Release
-              </span>
-            </div>
-            <h3 className="mb-4 text-5xl font-black leading-none tracking-tighter md:text-6xl">
-              The Weekly Drop.
-            </h3>
-            <p className="mb-8 max-w-sm text-lg font-medium text-white/80">
-              Every Tuesday, we unlock exclusive shopping credits and private sales for Canada&apos;s
-              finest luxury retailers.
-            </p>
-            <div className="flex items-center space-x-4">
-              <button
-                type="button"
-                className="rounded-2xl bg-white px-10 py-4 text-sm font-black text-purple-600 shadow-xl transition-all hover:scale-105 active:scale-95"
-              >
-                Set Drop Alert
-              </button>
-              <span className="text-xs font-black uppercase tracking-widest opacity-40">
-                Next Drop: 14:02:55
-              </span>
-            </div>
-          </div>
-          <div className="pointer-events-none absolute -bottom-16 -right-16 opacity-10 transition-transform duration-700 group-hover:scale-110">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-80 w-80" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z" />
-            </svg>
-          </div>
-        </div>
+  async function handleAdd(e) {
+    e.preventDefault();
+    setError(null);
+    setAddSuccess(false);
+    const t = title?.trim();
+    const o = offer?.trim();
+    if (!t || !o) {
+      setError("Title and offer are required.");
+      return;
+    }
+    setAdding(true);
+    const { error: err } = await addVipDeal({
+      title: t,
+      description: description?.trim() || undefined,
+      offer: o,
+      image_url: imageUrl?.trim() || undefined,
+      link_url: linkUrl?.trim() || undefined,
+      coupon_code: couponCode?.trim() || undefined,
+    });
+    setAdding(false);
+    if (err) {
+      setError(err.message ?? "Failed to add.");
+      return;
+    }
+    setTitle("");
+    setDescription("");
+    setOffer("");
+    setImageUrl("");
+    setLinkUrl("");
+    setCouponCode("");
+    setAddSuccess(true);
+    if (onRefresh) onRefresh();
+  }
 
-        {/* SHOPPING: Saint Laurent */}
-        <div className="group flex flex-col justify-between rounded-[3rem] border border-gray-100 bg-gray-50 p-10 transition-all duration-500 hover:bg-black hover:text-white md:col-span-2 lg:col-span-3">
-          <div className="space-y-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-black shadow-sm transition-all group-hover:rotate-6 group-hover:bg-purple-600 group-hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+  async function handleRemove(dealId) {
+    setError(null);
+    setConfirmRemoveId(null);
+    setRemoving(dealId);
+    const { error: err } = await removeVipDeal(dealId);
+    setRemoving(null);
+    if (err) setError(err.message ?? "Failed to remove.");
+    else if (onRefresh) onRefresh();
+  }
+
+  if (isAgent) {
+    return (
+      <div className="mx-auto max-w-[1600px] animate-fade-in px-4 sm:px-6 md:px-8 lg:px-12 pb-24 sm:pb-32 pt-20 md:pt-12 lg:pt-24 min-w-0">
+        <header className="mb-10 border-b border-border pb-8">
+          <h1 className="text-3xl font-bold text-foreground md:text-4xl">VIP Deals</h1>
+          <p className="mt-2 text-muted">Share discounts, coupons, and perks with your clients. Users who choose you will see these.</p>
+        </header>
+
+        <section className="mb-10 rounded-2xl border border-border bg-surface-elevated p-6">
+          <h2 className="text-lg font-bold text-foreground">Add a deal</h2>
+          <p className="mt-1 text-sm text-muted">e.g. restaurant discount, store coupon, exclusive access.</p>
+          <form onSubmit={handleAdd} className="mt-4 space-y-4">
+            {addSuccess && (
+              <p className="rounded-xl bg-green-100 px-4 py-3 text-sm font-semibold text-green-800" role="status">
+                Done. Your deal has been added.
+              </p>
+            )}
+            {error && (
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>
+            )}
+            <div>
+              <label htmlFor="vip-title" className="block text-sm font-semibold text-foreground">Title <span className="text-red-500">*</span></label>
+              <input
+                id="vip-title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. 20% off at Le Bernardin"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                disabled={adding}
+              />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 group-hover:text-white/40">
-                Haute Couture
-              </span>
-              <h3 className="mb-2 text-4xl font-black tracking-tighter">{MOCK_PERKS[2].brand}</h3>
-              <p className="text-lg font-medium leading-tight text-gray-500 group-hover:text-white/60">
-                {MOCK_PERKS[2].offer}
-              </p>
+              <label htmlFor="vip-offer" className="block text-sm font-semibold text-foreground">Offer <span className="text-red-500">*</span></label>
+              <input
+                id="vip-offer"
+                type="text"
+                value={offer}
+                onChange={(e) => setOffer(e.target.value)}
+                placeholder="e.g. Complimentary tasting for two"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                disabled={adding}
+              />
             </div>
-          </div>
-          <button
-            type="button"
-            className="border-b-2 border-transparent pt-2 text-[11px] font-black uppercase tracking-[0.2em] transition-all group-hover:border-white"
-          >
-            Unlock Member Code
-          </button>
-        </div>
-      </div>
+            <div>
+              <label htmlFor="vip-description" className="block text-sm font-semibold text-foreground">Description (optional)</label>
+              <textarea
+                id="vip-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Details, terms, or how to redeem"
+                rows={2}
+                className="mt-1 w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                disabled={adding}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="vip-image" className="block text-sm font-semibold text-foreground">Image URL (optional)</label>
+                <input
+                  id="vip-image"
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  disabled={adding}
+                />
+              </div>
+              <div>
+                <label htmlFor="vip-link" className="block text-sm font-semibold text-foreground">Link (optional)</label>
+                <input
+                  id="vip-link"
+                  type="url"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="Where to redeem or learn more"
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  disabled={adding}
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="vip-coupon" className="block text-sm font-semibold text-foreground">Coupon / promo code (optional)</label>
+              <input
+                id="vip-coupon"
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="e.g. AGENT20"
+                className="mt-1 w-full max-w-xs rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                disabled={adding}
+              />
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button type="submit" disabled={adding || !title?.trim() || !offer?.trim()} className="rounded-xl bg-primary px-6 py-3 font-semibold text-white hover:opacity-90 disabled:opacity-50">
+              {adding ? "Adding…" : "Add deal"}
+            </button>
+          </form>
+        </section>
 
-      {/* Real Estate Opportunities: Privé Listings */}
-      <section className="space-y-6">
-        <div className="flex flex-col justify-between border-b border-gray-100 pb-4 md:flex-row md:items-baseline">
-          <div className="flex flex-col">
-            <h2 className="text-4xl font-black tracking-tight">Privé Listings.</h2>
-            <p className="font-medium text-gray-400">Under-market assets curated for your portfolio.</p>
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
-            {propertyDeals.length} Active Offers
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {propertyDeals.slice(0, 4).map((deal) => {
-            const href = `/listings/${deal.id}`;
-            return (
-              <Link
-                key={deal.id}
-                href={href}
-                className="group flex cursor-pointer flex-col space-y-2"
-              >
-                <div className="relative aspect-[1.4] overflow-hidden rounded-[2rem] border border-gray-50">
-                  <img
-                    src={deal.image || deal.images?.[0]}
-                    alt={deal.title}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute bottom-4 right-4 rounded-xl bg-white px-3 py-1.5 shadow-xl">
-                    <div className="text-[9px] font-black uppercase leading-none tracking-tighter text-gray-300 line-through">
-                      ${(deal.originalPrice ?? 0).toLocaleString()}
-                    </div>
-                    <div className="mt-0.5 text-sm font-black leading-none text-purple-600">
-                      ${(deal.price ?? 0).toLocaleString()}
-                    </div>
+        <section className={`relative ${confirmRemoveId ? "min-h-[320px]" : ""}`} aria-label="Your VIP deals">
+          <h2 className="text-xl font-bold text-foreground">Your VIP deals</h2>
+          {deals.length === 0 ? (
+            <p className="mt-4 text-muted">No deals yet. Add one above.</p>
+          ) : (
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {deals.map((deal) => (
+                <div key={deal.id} className="flex flex-col rounded-2xl border border-border bg-surface-elevated overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    <img
+                      src={deal.image_url || DEFAULT_IMAGE}
+                      alt={deal.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 p-4">
+                    <h3 className="font-bold text-foreground">{deal.title}</h3>
+                    <p className="mt-1 text-primary font-semibold">{deal.offer}</p>
+                    {deal.description && <p className="mt-2 text-sm text-muted line-clamp-2">{deal.description}</p>}
+                    {deal.coupon_code && <p className="mt-2 text-sm font-mono rounded bg-surface px-2 py-1 inline-block">Code: {deal.coupon_code}</p>}
+                  </div>
+                  <div className="p-4 pt-0">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmRemoveId(deal.id)}
+                      disabled={removing === deal.id}
+                      className="w-full rounded-xl border border-red-200 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {removing === deal.id ? "Removing…" : "Remove"}
+                    </button>
                   </div>
                 </div>
-                <div className="px-1">
-                  <h4 className="truncate text-base font-black transition-colors group-hover:text-purple-600">
-                    {deal.title}
-                  </h4>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                    {deal.location}
-                  </p>
+              ))}
+            </div>
+          )}
+
+          {confirmRemoveId && (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/50 backdrop-blur-sm min-h-[280px]"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="confirm-remove-title"
+              aria-describedby="confirm-remove-desc"
+              onClick={() => setConfirmRemoveId(null)}
+            >
+              <div
+                className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-surface-elevated p-6 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 id="confirm-remove-title" className="text-lg font-bold text-foreground">Remove this VIP deal?</h2>
+                <p id="confirm-remove-desc" className="mt-2 text-sm text-muted">This cannot be undone. The deal will no longer appear for your clients.</p>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRemoveId(null)}
+                    className="flex-1 rounded-xl border-2 border-border py-2.5 font-semibold text-foreground hover:bg-surface"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(confirmRemoveId)}
+                    disabled={removing === confirmRemoveId}
+                    className="flex-1 rounded-xl bg-red-600 py-2.5 font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {removing === confirmRemoveId ? "Removing…" : "Remove"}
+                  </button>
                 </div>
-              </Link>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  }
+
+  if (!hasChosenAgent) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 md:px-8 lg:px-12 pb-24 sm:pb-32 pt-20 md:pt-12 lg:pt-24 min-w-0">
+        <header className="mb-10 border-b border-border pb-8">
+          <h1 className="text-3xl font-bold text-foreground md:text-4xl">VIP Deals</h1>
+          <p className="mt-2 text-muted">Exclusive discounts and perks from your agent.</p>
+        </header>
+        <div className="rounded-2xl border border-border bg-surface-elevated p-12 text-center">
+          <p className="text-muted">Choose an agent from the list to see their VIP deals here.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAgentId) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 md:px-8 lg:px-12 pb-24 sm:pb-32 pt-20 md:pt-12 lg:pt-24 min-w-0">
+        <header className="mb-10 border-b border-border pb-8">
+          <h1 className="text-3xl font-bold text-foreground md:text-4xl">VIP Deals</h1>
+          <p className="mt-2 text-muted">Exclusive discounts and perks from {chosenAgent.agentName}.</p>
+        </header>
+        <div className="rounded-2xl border border-border bg-surface-elevated p-12 text-center">
+          <p className="text-muted">Your agent doesn’t have any VIP deals listed yet.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (deals.length === 0) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 md:px-8 lg:px-12 pb-24 sm:pb-32 pt-20 md:pt-12 lg:pt-24 min-w-0">
+        <header className="mb-10 border-b border-border pb-8">
+          <h1 className="text-3xl font-bold text-foreground md:text-4xl">VIP Deals</h1>
+          <p className="mt-2 text-muted">Exclusive discounts and perks from {chosenAgent.agentName}.</p>
+        </header>
+        <div className="rounded-2xl border border-border bg-surface-elevated p-12 text-center">
+          <p className="text-muted">Your agent has no VIP deals right now.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-[1600px] animate-fade-in px-4 sm:px-6 md:px-8 lg:px-12 pb-24 sm:pb-32 pt-20 md:pt-12 lg:pt-24 min-w-0">
+      <header className="mb-10 border-b border-border pb-8">
+        <h1 className="text-3xl font-bold text-foreground md:text-4xl">VIP Deals</h1>
+        <p className="mt-2 text-muted">Exclusive discounts and perks from {chosenAgent.agentName}.</p>
+      </header>
+
+      <section>
+        <div className="flex flex-col justify-between border-b border-border pb-4 md:flex-row md:items-baseline">
+          <h2 className="text-xl font-bold text-foreground">Privé perks</h2>
+          <span className="text-sm text-muted">{deals.length} deal{deals.length !== 1 ? "s" : ""}</span>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {deals.map((deal) => {
+            const link = deal.link_url?.trim();
+            const Wrapper = link ? "a" : "div";
+            const wrapperProps = link ? { href: link, target: "_blank", rel: "noopener noreferrer", className: "flex flex-col rounded-2xl border border-border bg-surface-elevated overflow-hidden hover:border-primary/50 transition-colors" } : { className: "flex flex-col rounded-2xl border border-border bg-surface-elevated overflow-hidden" };
+            return (
+              <Wrapper key={deal.id} {...wrapperProps}>
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                  <img
+                    src={deal.image_url || DEFAULT_IMAGE}
+                    alt={deal.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 p-5">
+                  <h3 className="font-bold text-foreground">{deal.title}</h3>
+                  <p className="mt-1 text-primary font-semibold">{deal.offer}</p>
+                  {deal.description && <p className="mt-2 text-sm text-muted">{deal.description}</p>}
+                  {deal.coupon_code && (
+                    <p className="mt-3 font-mono text-sm rounded-lg bg-surface px-3 py-2 border border-border">
+                      Code: <span className="font-bold">{deal.coupon_code}</span>
+                    </p>
+                  )}
+                </div>
+                {link && (
+                  <div className="px-5 pb-5">
+                    <span className="text-sm font-medium text-primary">View offer →</span>
+                  </div>
+                )}
+              </Wrapper>
             );
           })}
         </div>
       </section>
-
-      {/* Footer Concierge Action */}
-      <footer className="mt-20 border-t border-gray-50 pt-16 text-center">
-        <div className="mx-auto max-w-xl space-y-8">
-          <p className="text-[10px] font-black uppercase tracking-[0.6em] text-gray-300">
-            Lumina Concierge Privé
-          </p>
-          <h4 className="text-3xl font-black leading-none tracking-tight">
-            Looking for something specific?
-          </h4>
-          <p className="font-medium text-gray-400">
-            Our lifestyle managers can source sold-out tickets, private table access, or off-market
-            items globally.
-          </p>
-          <button
-            type="button"
-            className="rounded-2xl bg-black px-12 py-5 text-lg font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
-          >
-            Contact Lifestyle Manager
-          </button>
-        </div>
-      </footer>
     </div>
   );
 }

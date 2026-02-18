@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, hasSupabase } from "@/lib/supabase";
 import AuthModal from "@/components/AuthModal";
@@ -30,13 +30,30 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [intendedPath, setIntendedPath] = useState(null);
+  const hadUserRef = useRef(false);
 
   useEffect(() => {
     if (!hasSupabase()) return;
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      hadUserRef.current = !!u;
+      fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'AuthContext.js:getSession:then',message:'AuthContext getSession ok',data:{hasSession:!!session},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
+    }).catch((e) => {
+      fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'AuthContext.js:getSession:catch',message:'AuthContext getSession failed',data:{errName:e?.name,errMessage:e?.message},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
+    });
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      const u = session?.user ?? null;
+      const wasSignedOut = event === "SIGNED_OUT" || event === "USER_DELETED";
+      const nowNoUser = !u;
+      if (hadUserRef.current && (wasSignedOut || nowNoUser)) {
+        setShowAuthModal(true);
+      }
+      hadUserRef.current = !!u;
+      setUser(u);
+    });
     return () => subscription?.unsubscribe();
   }, []);
 

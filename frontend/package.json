@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "description": "Next.js frontend (LUMINA) for VestaHome",
+  "description": "Next.js frontend (Kozi) for VestaHome",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",
     "chart.js": "^4.5.1",
+    "stripe": "^17.5.0",
     "leaflet": "^1.9.4",
     "next": "16.1.6",
     "react": "19.2.3",
