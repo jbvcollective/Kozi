@@ -26,7 +26,9 @@ async function parseSearchQueryViaApi(query) {
       data.beds != null ||
       data.baths != null ||
       data.type ||
-      (Array.isArray(data.amenities) && data.amenities.length > 0);
+      (Array.isArray(data.amenities) && data.amenities.length > 0) ||
+      data.forSaleOnly === true ||
+      data.forSaleOnly === false;
     if (!hasFilters) return null;
     return {
       location: data.location,
@@ -176,7 +178,7 @@ function parseSearchQueryFallback(query) {
   }
   if (foundAmenities.length) filters.amenities = [...new Set(foundAmenities)];
 
-  const wantsRent = /\b(rent|monthly|per month|\/mo\b|lease)\b/.test(lower);
+  const wantsRent = /\b(rent|rentals?|monthly|per month|\/mo\b|lease)\b/.test(lower);
   if (filters.type != null && !wantsRent) filters.forSaleOnly = true;
   else if (wantsRent) filters.forSaleOnly = false;
 

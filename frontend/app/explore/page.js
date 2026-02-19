@@ -309,7 +309,7 @@ function ExplorePageContent() {
           amenities: Array.isArray(result.amenities) ? result.amenities : [],
         };
         setAiFilters(nextFilters);
-        const hasFilters = nextFilters.location || nextFilters.minPrice != null || nextFilters.maxPrice != null || nextFilters.beds != null || nextFilters.baths != null || nextFilters.type || (nextFilters.amenities?.length > 0);
+        const hasFilters = nextFilters.location || nextFilters.minPrice != null || nextFilters.maxPrice != null || nextFilters.beds != null || nextFilters.baths != null || nextFilters.type || (nextFilters.amenities?.length > 0) || nextFilters.forSaleOnly === true || nextFilters.forSaleOnly === false;
         if (hasFilters) {
           setLoadingVoiceSearch(true);
           setVoiceSearchRows([]);

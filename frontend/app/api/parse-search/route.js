@@ -65,7 +65,7 @@ RULES:
 - minPrice/maxPrice: numbers. "under 800k", "less than 800k", "less than 800k amount", "below 500k", "for 800k", "for 800k in Toronto", "at 800k", "around 800k", "800k" (as budget) → maxPrice 800000. "under 500k" → maxPrice 500000. "under 1 million" or "under 1M" → maxPrice 1000000. "over 400k" → minPrice 400000.
 - amenities: array of strings. Extract when user says "with gym or pool", "amenities like gym, pool", "with pool", "has gym", "with parking", "with garage", etc. Use ONLY these exact values (capitalized): Pool, Parking, Garage, Gym, Waterfront, Guest House, Concierge, Smart Home, Laundry, Balcony, Fireplace, Air Conditioning, Elevator, Storage. Map: gym/fitness/exercise → Gym, pool/swimming → Pool, parking/driveway → Parking, garage → Garage, waterfront/lakefront → Waterfront, guest house/in-law suite → Guest House, concierge → Concierge, smart home → Smart Home, laundry/washer/dryer → Laundry, balcony/terrace/deck → Balcony, fireplace → Fireplace, AC/air conditioning/central air → Air Conditioning, elevator/lift → Elevator, storage/locker → Storage. Return [] if no amenities mentioned.
 - conversationalResponse: one short sentence summarizing ALL criteria INCLUDING PRICE when user gave one, AND AMENITIES when mentioned (e.g. "Homes in Oakville under $800K." or "Homes with gym, pool."). Plain text only.
-- forSaleOnly: boolean. If the user asks for a home, house, condo, etc. and does NOT say "rent", "monthly", "per month", "$/mo", or "lease", set forSaleOnly to true (they want to buy). If they say rent or monthly, set forSaleOnly to false. Default true when type is house/condo/townhouse and rent not mentioned.
+- forSaleOnly: boolean. If the user asks for a home, house, condo, etc. and does NOT say "rent", "rentals", "rental", "monthly", "per month", "$/mo", or "lease", set forSaleOnly to true (they want to buy). If they say rent, rentals, rental, monthly, per month, lease, or "add rentals" (show me rentals), set forSaleOnly to false. Default true when type is house/condo/townhouse and rent not mentioned.
 
 EXAMPLES (return every mentioned criterion):
 "find me a home under 800k in Oakville" → {"location":"Oakville","minPrice":null,"maxPrice":800000,"beds":null,"baths":null,"type":"house","forSaleOnly":true,"conversationalResponse":"Homes in Oakville under $800K."}
@@ -76,6 +76,7 @@ EXAMPLES (return every mentioned criterion):
 "find me a home less than 800k" → {"location":null,"minPrice":null,"maxPrice":800000,"beds":null,"baths":null,"type":"house","forSaleOnly":true,"conversationalResponse":"Homes under $800K."}
 "home with gym or pool" → {"location":null,"minPrice":null,"maxPrice":null,"beds":null,"baths":null,"type":"house","forSaleOnly":true,"amenities":["Gym","Pool"],"conversationalResponse":"Homes with gym, pool."}
 "condo with amenities like a gym and pool" → {"location":null,"minPrice":null,"maxPrice":null,"beds":null,"baths":null,"type":"condo","forSaleOnly":true,"amenities":["Gym","Pool"],"conversationalResponse":"Condos with gym, pool."}
+"rentals" or "add rentals" or "show rentals" → {"location":null,"minPrice":null,"maxPrice":null,"beds":null,"baths":null,"type":null,"forSaleOnly":false,"conversationalResponse":"Here are rentals."}
 
 Output the JSON object only.`;
     const userMessage = `User message: ${query}`;
@@ -162,7 +163,7 @@ Output the JSON object only.`;
       MAX_RESPONSE_LENGTH
     ) || `Showing properties matching "${query}".`;
 
-    const hasFilters = location || minPrice != null || maxPrice != null || beds != null || baths != null || type || uniqueAmenities.length > 0;
+    const hasFilters = location || minPrice != null || maxPrice != null || beds != null || baths != null || type || uniqueAmenities.length > 0 || parsed.forSaleOnly === true || parsed.forSaleOnly === false;
     if (!hasFilters) {
       return NextResponse.json(
         { location: undefined, minPrice: undefined, maxPrice: undefined, beds: undefined, baths: undefined, type: undefined, forSaleOnly: undefined, amenities: [], conversationalResponse },
