@@ -8,8 +8,12 @@ function isValidEmail(str) {
   return typeof str === "string" && EMAIL_REGEX.test(str.trim());
 }
 
+// Responsive tiers (Tailwind breakpoints):
+// - Phone:  default, < 768px  (modal: max-w-md 448px, compact padding)
+// - Tablet: md,      768px+   (modal: max-w-lg 512px, md padding)
+// - Laptop: lg,      1024px+  (modal: max-w-xl 576px, larger padding)
 const inputClass =
-  "w-full rounded-xl border border-border bg-surface-elevated px-4 py-3 text-foreground placeholder-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+  "w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 md:px-4 md:py-3 text-sm md:text-base text-foreground placeholder-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
 const AGENT_ASSETS_BUCKET = "agent-assets";
 
@@ -228,14 +232,16 @@ export default function AuthModal({ onClose, onSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-black/50 backdrop-blur-sm animate-fade-in overscroll-contain p-4 md:p-6 lg:p-8"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div
-        className="relative w-full max-w-md rounded-3xl border border-border bg-surface-elevated p-8 shadow-2xl"
-      >
+      {/* Phone: default | Tablet: md (768px+) | Laptop: lg (1024px+) */}
+      <div className="flex min-h-full items-center justify-center py-4 md:py-6 lg:py-8">
+        <div
+          className="relative w-full max-w-md md:max-w-lg lg:max-w-xl rounded-3xl border border-border bg-surface-elevated px-5 pt-5 pb-6 md:p-8 shadow-2xl"
+        >
         <button
           type="button"
           onClick={onClose}
@@ -247,46 +253,46 @@ export default function AuthModal({ onClose, onSuccess }) {
           </svg>
         </button>
 
-        <h2 id="auth-modal-title" className="text-2xl font-black tracking-tight text-foreground mb-1">
+        <h2 id="auth-modal-title" className="text-xl md:text-2xl font-black tracking-tight text-foreground mb-1">
           {mode === "signin" ? "Sign in" : "Create account"}
         </h2>
-        <p className="text-sm text-muted mb-6">
+        <p className="text-xs md:text-sm text-muted mb-3 md:mb-6">
           {mode === "signin"
             ? "Sign in to view listings and save your favourites."
             : mode === "signup" && userType === null
               ? "Are you signing up as a user or as a broker/agent?"
               : userType === "user"
-                ? "Create your account with first name, last name, email, phone and password."
-                : "Create your broker/agent account with first name, last name, email, phone, brokerage chosen name, and a photo of yourself."}
+                ? "Create your account with your name, email, phone and password."
+                : "Create your broker/agent account with your details and a photo."}
         </p>
 
         {mode === "signup" && userType === null ? (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <button
                 type="button"
                 onClick={() => { setUserType("user"); setError(null); setPhotoFile(null); setPhotoPreview(null); }}
-                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
+                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-4 md:p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <span className="text-lg font-black text-foreground">User</span>
+                <span className="text-base md:text-lg font-black text-foreground">User</span>
                 <span className="text-xs text-muted">Buyer or renter</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setUserType("agent"); setError(null); setPhotoFile(null); setPhotoPreview(null); }}
-                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
+                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-surface p-4 md:p-6 text-left transition-all hover:border-primary hover:bg-surface-elevated"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <span className="text-lg font-black text-foreground">Broker / Agent</span>
+                <span className="text-base md:text-lg font-black text-foreground">Broker / Agent</span>
                 <span className="text-xs text-muted">List properties</span>
               </button>
             </div>
@@ -297,7 +303,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             )}
           </>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             {mode === "signup" && userType !== null && (
               <button
                 type="button"
@@ -309,9 +315,9 @@ export default function AuthModal({ onClose, onSuccess }) {
             )}
             {mode === "signup" && userType !== null && (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="auth-first-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                    <label htmlFor="auth-first-name" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                       First name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -326,7 +332,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                     />
                   </div>
                   <div>
-                    <label htmlFor="auth-last-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                    <label htmlFor="auth-last-name" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                       Last name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -342,7 +348,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="auth-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                  <label htmlFor="auth-email" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                     Email <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -355,10 +361,10 @@ export default function AuthModal({ onClose, onSuccess }) {
                     placeholder="you@example.com"
                     disabled={loading}
                   />
-                  <p className="mt-1 text-xs text-muted">Use a valid email format (e.g. name@example.com)</p>
+                  <p className="mt-0.5 text-[11px] text-muted">Valid email format (e.g. name@example.com)</p>
                 </div>
                 <div>
-                  <label htmlFor="auth-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                  <label htmlFor="auth-phone" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                     Phone <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -375,7 +381,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                 {userType === "agent" && (
                   <>
                     <div>
-                      <label htmlFor="auth-brokerage" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                      <label htmlFor="auth-brokerage" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                         Brokerage chosen name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -396,7 +402,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             {mode === "signin" && (
               <>
                 <div>
-                  <label htmlFor="auth-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                  <label htmlFor="auth-email" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                     Email
                   </label>
                   <input
@@ -412,7 +418,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="auth-password" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                  <label htmlFor="auth-password" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                     Password
                   </label>
                   <div className="relative">
@@ -446,7 +452,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             )}
             {mode === "signup" && userType !== null && (
               <div>
-                <label htmlFor="auth-password" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                <label htmlFor="auth-password" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                   Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -479,18 +485,18 @@ export default function AuthModal({ onClose, onSuccess }) {
 
             {mode === "signup" && userType === "agent" && (
               <div>
-                <label htmlFor="auth-agent-photo" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+                <label htmlFor="auth-agent-photo" className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted">
                   Your photo <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {photoPreview && (
-                    <img src={photoPreview} alt="You" className="h-16 w-16 rounded-full object-cover border border-border" />
+                    <img src={photoPreview} alt="You" className="h-12 w-12 rounded-full object-cover border border-border flex-shrink-0" />
                   )}
                   <input
                     id="auth-agent-photo"
                     type="file"
                     accept="image/*"
-                    className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:cursor-pointer hover:file:opacity-90"
+                    className="block w-full text-sm text-muted file:mr-2 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white file:cursor-pointer hover:file:opacity-90"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       setPhotoFile(f || null);
@@ -499,7 +505,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                     disabled={loading}
                   />
                 </div>
-                <p className="mt-1 text-xs text-muted">Required — add a picture of yourself. You can change it later in Dashboard → Customize.</p>
+                <p className="mt-0.5 text-[11px] text-muted">Required — you can change it later in Dashboard → Customize.</p>
               </div>
             )}
 
@@ -517,14 +523,14 @@ export default function AuthModal({ onClose, onSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="w-full rounded-xl bg-primary px-6 py-3 md:py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {loading ? (mode === "signin" ? "Signing in…" : "Creating account…") : mode === "signin" ? "Sign in" : "Sign up"}
             </button>
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm text-muted">
+        <p className="mt-4 md:mt-6 text-center text-sm text-muted">
           {mode === "signin" ? (
             <>
               Don&apos;t have an account?{" "}
@@ -549,6 +555,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             </>
           )}
         </p>
+        </div>
       </div>
     </div>
   );
