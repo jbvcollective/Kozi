@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchListingById, getCachedListingById } from "@/lib/api";
 import { mapListingToProperty } from "@/lib/propertyUtils";
@@ -20,6 +20,9 @@ export default function ListingDetailPage() {
 function ListingDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromUrl = searchParams.get("from");
+  const returnQuery = searchParams.get("q");
   const id = params?.id;
   const { savedIds, toggleSave } = useSaved();
   const cached = id ? getCachedListingById(id) : null;
@@ -62,13 +65,23 @@ function ListingDetailContent() {
     );
   }
 
+  const backToResults = () => {
+    if (fromUrl && typeof fromUrl === "string" && fromUrl.startsWith("/") && !fromUrl.startsWith("//")) {
+      router.push(fromUrl);
+    } else if (returnQuery?.trim()) {
+      router.push(`/explore?q=${encodeURIComponent(returnQuery)}`);
+    } else {
+      router.push("/explore");
+    }
+  };
+
   if (error || !property) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-24 md:px-6 md:pt-24 lg:px-8 xl:px-12">
         <p className="text-lg font-bold text-red-600">{error || "Not found"}</p>
         <button
           type="button"
-          onClick={() => router.push("/explore")}
+          onClick={backToResults}
           className="rounded-2xl bg-black px-8 py-3 font-bold text-white"
         >
           Back to Explore
@@ -82,7 +95,7 @@ function ListingDetailContent() {
       property={property}
       isSaved={savedIds.includes(property.id)}
       onToggleSave={toggleSave}
-      onBack={() => router.push("/explore")}
+      onBack={backToResults}
     />
   );
 }

@@ -1,13 +1,13 @@
 import { supabase, hasSupabase } from "./supabase";
 
 // Backend API (optional). Set NEXT_PUBLIC_API_URL in .env.local if you use the Express server.
+// OWASP: No API keys in client-side code. Auth to Express is via Bearer token only.
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
+/** Build headers for backend requests. Uses only Bearer token; no secret keys (never use NEXT_PUBLIC_* for secrets). */
 function getApiHeaders(session) {
   const headers = {};
   if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-  if (typeof apiKey === "string" && apiKey) headers["X-Api-Key"] = apiKey;
   return headers;
 }
 
@@ -51,10 +51,8 @@ async function getSession() {
   if (!supabase?.auth) return null;
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:getSession:ok',message:'getSession ok',data:{hasSession:!!session},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
     return session ?? null;
   } catch (e) {
-    fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:getSession:catch',message:'getSession failed',data:{errName:e?.name,errMessage:e?.message},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
     throw e;
   }
 }
@@ -83,15 +81,68 @@ export async function fetchListingsSearch(filters) {
   return Array.isArray(json?.data) ? json.data : [];
 }
 
+/**
+ * Fetch listings within map viewport bounds. Use for View All map so only the visible area is loaded.
+ * Calls backend GET /api/listings/in-bounds when NEXT_PUBLIC_API_URL is set; otherwise Supabase RPC when configured.
+ * @param {{ minLat: number, maxLat: number, minLng: number, maxLng: number, limit?: number }} options
+ * @returns {Promise<Array<{ listing_key: string, idx: object, vow: object, updated_at: string }>>} Raw rows; map with mapListingToProperty().
+ */
+export async function fetchListingsInBounds(options = {}) {
+  const { minLat, maxLat, minLng, maxLng, limit = 500 } = options;
+  if (
+    minLat == null || maxLat == null || minLng == null || maxLng == null ||
+    !Number.isFinite(minLat) || !Number.isFinite(maxLat) || !Number.isFinite(minLng) || !Number.isFinite(maxLng)
+  ) {
+    return [];
+  }
+  const session = await getSession();
+  if (!session) return [];
+
+  if (API_BASE) {
+    const params = new URLSearchParams({
+      minLat: String(minLat),
+      maxLat: String(maxLat),
+      minLng: String(minLng),
+      maxLng: String(maxLng),
+      limit: String(Math.min(limit, 1000)),
+    });
+    const url = `${API_BASE}/api/listings/in-bounds?${params.toString()}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    try {
+      const res = await fetch(url, { cache: "no-store", signal: controller.signal, headers: getApiHeaders(session) });
+      clearTimeout(timeoutId);
+      if (!res.ok) throw new Error(res.status === 401 ? "Sign in to view listings." : res.statusText || "Request failed");
+      const json = await parseJson(res, url);
+      return Array.isArray(json?.data) ? json.data : [];
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e?.name === "AbortError") throw new Error("Map listings request timed out.");
+      throw e;
+    }
+  }
+
+  if (hasSupabase()) {
+    const { data, error } = await supabase.rpc("listings_in_bounds", {
+      min_lat: minLat,
+      max_lat: maxLat,
+      min_lng: minLng,
+      max_lng: maxLng,
+      max_count: Math.min(limit, 1000),
+    });
+    if (error) throw new Error(error.message || "Map listings failed.");
+    return Array.isArray(data) ? data : [];
+  }
+
+  return [];
+}
+
 /** Fetch listings from listings_unified_clean. Login required; no data for anonymous users. Uses Supabase when configured (RLS: authenticated read-only). Fetches in chunks to return all requested rows. When options.includeCount is true, returns { data, total } instead of an array. */
 export async function fetchListings(options = {}) {
   const requestedLimit = options.limit ?? 500;
   const limit = Math.min(requestedLimit, 50000);
   const offset = options.offset ?? 0;
   const includeCount = options.includeCount === true;
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:entry',message:'fetchListings entry',data:{hasSupabase:hasSupabase(),API_BASE,limit,offset},timestamp:Date.now(),hypothesisId:'H1-H2-H5'})}).catch(()=>{});
-  // #endregion
 
   if (hasSupabase()) {
     const session = await getSession();
@@ -101,9 +152,6 @@ export async function fetchListings(options = {}) {
     const toEnd = offset + limit;
     let totalCount = null;
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:supabase-branch',message:'using Supabase branch',data:{from,toEnd},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
       while (from < toEnd) {
         const chunkSize = Math.min(SUPABASE_CHUNK_SIZE, toEnd - from);
         const selectOpts = includeCount && from === offset ? { count: "exact" } : {};
@@ -124,15 +172,9 @@ export async function fetchListings(options = {}) {
         if (rows.length < chunkSize) break;
         from += rows.length;
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:supabase-success',message:'fetchListings Supabase branch succeeded',data:{count:all.length},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
       if (includeCount) return { data: all, total: totalCount ?? all.length };
       return all;
     } catch (e) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:supabase-catch',message:'fetchListings Supabase branch threw',data:{errName:e?.name,errMessage:e?.message,isAbortError:e?.name==='AbortError'},timestamp:Date.now(),hypothesisId:'H2-H3-H4'})}).catch(()=>{});
-      // #endregion
       if (e?.message?.includes("timed out")) throw e;
       const isNetworkError = e?.name === "TypeError" && (e?.message === "Failed to fetch" || e?.message?.toLowerCase?.().includes("fetch"));
       if (isNetworkError && API_BASE) {
@@ -171,9 +213,6 @@ export async function fetchListings(options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 12000);
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:before-express-fetch',message:'about to fetch Express listings',data:{url},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
-    // #endregion
     const res = await fetch(url, { cache: "no-store", signal: controller.signal, headers });
     clearTimeout(timeoutId);
     if (!res.ok) throw new Error(res.status === 503 ? "Backend not configured" : res.statusText);
@@ -181,9 +220,6 @@ export async function fetchListings(options = {}) {
     return Array.isArray(json) ? json : (json?.data ?? []);
   } catch (e) {
     clearTimeout(timeoutId);
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchListings:express-catch',message:'fetchListings Express branch threw',data:{errName:e?.name,errMessage:e?.message,url,isAbortError:e?.name==='AbortError'},timestamp:Date.now(),hypothesisId:'H1-H3-H4-H5'})}).catch(()=>{});
-    // #endregion
     if (e.name === "AbortError") {
       throw new Error(
         "Request timed out. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local to load listings from Supabase, or start the backend (npm run serve) and set NEXT_PUBLIC_API_URL."
@@ -338,7 +374,6 @@ export async function fetchSoldTerminatedListings(options = {}) {
     return Array.isArray(json) ? json : (json?.data ?? []);
   } catch (e) {
     clearTimeout(timeoutId);
-    fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'api.js:fetchSoldTerminatedListings:catch',message:'fetchSoldTerminatedListings threw',data:{errName:e?.name,errMessage:e?.message,isAbortError:e?.name==='AbortError'},timestamp:Date.now(),hypothesisId:'H3-H4'})}).catch(()=>{});
     if (e.name === "AbortError") throw new Error("Request timed out.");
     throw e;
   }

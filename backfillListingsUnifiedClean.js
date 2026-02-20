@@ -23,9 +23,9 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/** Read from listings_unified and write to listings_unified_clean in batches (300–1000 ideal). */
-const PAGE_SIZE = 500;
-const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 500, 100), 1000);
+/** Read from listings_unified and write to listings_unified_clean in batches (smaller = fewer timeouts). */
+const PAGE_SIZE = 300;
+const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 250, 100), 1000);
 
 /** Same as SQL trigger: strip keys where value is null or empty array []. */
 function stripNullAndEmptyArray(obj) {

@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Frontend Supabase client. Uses ANON KEY only.
- * Never use the service role key in the frontend — it bypasses RLS and must stay on the backend.
- * Access pattern: Frontend → Supabase (anon key). Backend → Supabase (service role key).
+ * Frontend Supabase client. Uses ANON KEY only (safe to expose; RLS restricts access).
+ * OWASP: Never use the service role key here — it bypasses RLS and must stay server-side only.
+ * Do not add a hard-coded fallback key; use env vars only. Rotate anon key if exposed.
  */
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey =

@@ -23,8 +23,8 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/** Read/write batch size (300–1000 ideal; avoid timeout and ~2MB limit). */
-const BATCH_SIZE = Math.min(Math.max(parseInt(process.env.SYNC_SOLD_BATCH_SIZE, 10) || 500, 100), 1000);
+/** Read/write batch size (100–1000; lower = less Supabase load, fewer timeouts). */
+const BATCH_SIZE = Math.min(Math.max(parseInt(process.env.SYNC_SOLD_BATCH_SIZE, 10) || 250, 100), 1000);
 
 const OFF_MARKET_STATUSES = new Set([
   "Sold", "Terminated", "Expired", "Canceled", "Closed",

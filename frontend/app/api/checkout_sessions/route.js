@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe";
+import { checkoutSessionsBodySchema } from "@/lib/validationSchemas";
 
+// Server-only. Stripe secret key is in lib/stripe from env.
 const AGENT_PRO_PRICE_ID = process.env.STRIPE_AGENT_PRO_PRICE_ID;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
@@ -46,11 +47,16 @@ export async function POST(request) {
     let customerPhone = null;
     try {
       const body = await request.json();
-      const email = typeof body?.email === "string" ? body.email.trim() : "";
-      if (email && EMAIL_REGEX.test(email)) customerEmail = email;
-      if (typeof body?.name === "string" && body.name.trim()) customerName = body.name.trim();
-      if (typeof body?.phone === "string" && body.phone.trim()) customerPhone = body.phone.trim();
-    } catch (_) {}
+      const parsed = checkoutSessionsBodySchema.safeParse(body ?? {});
+      if (!parsed.success) {
+        return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+      }
+      if (parsed.data.email) customerEmail = parsed.data.email;
+      if (parsed.data.name) customerName = parsed.data.name;
+      if (parsed.data.phone) customerPhone = parsed.data.phone;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
 
     const headersList = await headers();
     const origin = headersList.get("origin") || headersList.get("referer")?.replace(/\/$/, "") || "http://localhost:3001";

@@ -44,7 +44,7 @@ async function syncOpenHouse() {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // Fetch ALL listings (no limit): paginate to get every row, only for open house extraction
-  const PAGE_SIZE = 1000;
+  const PAGE_SIZE = parseInt(process.env.OPEN_HOUSE_PAGE_SIZE, 10) || 500;
   let rows = [];
   let from = 0;
   let hasMore = true;

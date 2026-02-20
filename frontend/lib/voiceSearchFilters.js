@@ -3,16 +3,19 @@
  * Used by the listings search API (Supabase check) and explore page.
  */
 
-function listingTypeMatchesFilter(listingTypeStr, geminiType) {
-  if (!geminiType || !listingTypeStr) return !geminiType;
+/** Match listing type string (e.g. "Condo Apartment", "Detached") to filter type (normalized or raw MLS label). */
+function listingTypeMatchesFilter(listingTypeStr, filterType) {
+  if (!filterType || !listingTypeStr) return !filterType;
   const t = String(listingTypeStr).toLowerCase();
-  const g = String(geminiType).toLowerCase();
+  const g = String(filterType).toLowerCase();
+  // Normalized types (voice/Gemini)
   if (g === "house") return t.includes("detached") || t.includes("semi-detached") || t.includes("house") || t.includes("single family") || t.includes("residential");
   if (g === "condo") return t.includes("condo");
   if (g === "townhouse") return t.includes("townhouse");
   if (g === "commercial") return t.includes("commercial");
   if (g === "land") return t.includes("land");
   if (g === "multi-family") return t.includes("duplex") || t.includes("triplex") || t.includes("multiplex") || t.includes("multi-family");
+  // Raw MLS / sidebar type (e.g. "Detached", "Condo Apartment", "Mobile", "Farm")
   return t.includes(g);
 }
 

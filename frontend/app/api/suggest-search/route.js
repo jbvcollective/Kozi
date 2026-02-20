@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { suggestSearchBodySchema } from "@/lib/validationSchemas";
 
+// Server-only. Never expose via NEXT_PUBLIC_* or client bundle.
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
@@ -41,19 +43,30 @@ export async function POST(request) {
       return NextResponse.json({ error: "Suggestions not configured." }, { status: 503 });
     }
 
-    const body = await request.json().catch(() => ({}));
-    const raw = body.originalFilters ?? body.filters ?? {};
-    const originalQuery = typeof body.originalQuery === "string" ? body.originalQuery.trim().slice(0, 300) : "";
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+    const parsed = suggestSearchBodySchema.safeParse(body ?? {});
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body.", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const raw = parsed.data.originalFilters ?? parsed.data.filters ?? {};
+    const originalQuery = parsed.data.originalQuery ?? "";
 
     const originalFilters = {
-      location: typeof raw.location === "string" ? raw.location.trim().slice(0, 100) : undefined,
-      minPrice: raw.minPrice != null ? Number(raw.minPrice) : undefined,
-      maxPrice: raw.maxPrice != null ? Number(raw.maxPrice) : undefined,
-      beds: raw.beds != null ? Number(raw.beds) : undefined,
-      baths: raw.baths != null ? Number(raw.baths) : undefined,
-      type: typeof raw.type === "string" ? raw.type.trim().toLowerCase() : undefined,
+      location: raw.location,
+      minPrice: raw.minPrice,
+      maxPrice: raw.maxPrice,
+      beds: raw.beds,
+      baths: raw.baths,
+      type: raw.type,
     };
-    if (originalFilters.type && !ALLOWED_TYPES.includes(originalFilters.type)) originalFilters.type = undefined;
 
     const hasAny = originalFilters.location || originalFilters.minPrice != null || originalFilters.maxPrice != null ||
       originalFilters.beds != null || originalFilters.baths != null || originalFilters.type;
@@ -88,21 +101,21 @@ Return ONLY a valid JSON object with: location (string or null), minPrice (numbe
     }
 
     const cleaned = text.replace(/^```json?\s*|\s*```$/g, "").trim();
-    let parsed;
+    let suggestion;
     try {
-      parsed = JSON.parse(cleaned);
+      suggestion = JSON.parse(cleaned);
     } catch {
       return NextResponse.json({ error: "Invalid suggestion." }, { status: 502 });
     }
 
-    const location = sanitizeString(parsed.location, MAX_LOCATION_LENGTH);
-    const minPrice = sanitizeNumber(parsed.minPrice, MIN_PRICE, MAX_PRICE);
-    const maxPrice = sanitizeNumber(parsed.maxPrice, MIN_PRICE, MAX_PRICE);
-    const beds = sanitizeNumber(parsed.beds, 0, MAX_BEDS_BATHS);
-    const baths = sanitizeNumber(parsed.baths, 0, MAX_BEDS_BATHS);
-    const typeRaw = typeof parsed.type === "string" ? parsed.type.trim().toLowerCase() : "";
+    const location = sanitizeString(suggestion.location, MAX_LOCATION_LENGTH);
+    const minPrice = sanitizeNumber(suggestion.minPrice, MIN_PRICE, MAX_PRICE);
+    const maxPrice = sanitizeNumber(suggestion.maxPrice, MIN_PRICE, MAX_PRICE);
+    const beds = sanitizeNumber(suggestion.beds, 0, MAX_BEDS_BATHS);
+    const baths = sanitizeNumber(suggestion.baths, 0, MAX_BEDS_BATHS);
+    const typeRaw = typeof suggestion.type === "string" ? suggestion.type.trim().toLowerCase() : "";
     const type = ALLOWED_TYPES.includes(typeRaw) ? typeRaw : undefined;
-    const message = sanitizeString(parsed.message ?? "Here are similar listings.", MAX_MESSAGE_LENGTH) || "Here are similar listings.";
+    const message = sanitizeString(suggestion.message ?? "Here are similar listings.", MAX_MESSAGE_LENGTH) || "Here are similar listings.";
 
     const suggestedHasAny = location || minPrice != null || maxPrice != null || beds != null || baths != null || type;
     if (!suggestedHasAny) {

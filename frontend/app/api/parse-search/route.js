@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { parseSearchBodySchema } from "@/lib/validationSchemas";
 
+// Server-only. Never expose via NEXT_PUBLIC_* or client bundle.
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
@@ -45,8 +47,20 @@ export async function POST(request) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
-    const raw = body.q ?? body.query ?? "";
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+    const parsed = parseSearchBodySchema.safeParse(body ?? {});
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.errors?.[0]?.message ?? "Missing or invalid query." },
+        { status: 400 }
+      );
+    }
+    const raw = (parsed.data.q ?? parsed.data.query ?? "").trim();
     const query = sanitizeQuery(raw);
     if (!query) {
       return NextResponse.json(
@@ -109,9 +123,9 @@ Output the JSON object only.`;
     }
 
     const cleaned = text.replace(/^```json?\s*|\s*```$/g, "").trim();
-    let parsed;
+    let filters;
     try {
-      parsed = JSON.parse(cleaned);
+      filters = JSON.parse(cleaned);
     } catch {
       return NextResponse.json(
         { error: "Invalid parser response." },
@@ -119,15 +133,15 @@ Output the JSON object only.`;
       );
     }
 
-    let location = sanitizeString(parsed.location, MAX_LOCATION_LENGTH);
-    let minPrice = sanitizeNumber(parsed.minPrice, MIN_PRICE, MAX_PRICE);
-    let maxPrice = sanitizeNumber(parsed.maxPrice, MIN_PRICE, MAX_PRICE);
-    let beds = sanitizeNumber(parsed.beds, 0, MAX_BEDS_BATHS);
-    let baths = sanitizeNumber(parsed.baths, 0, MAX_BEDS_BATHS);
-    let typeRaw = typeof parsed.type === "string" ? parsed.type.trim().toLowerCase() : "";
+    let location = sanitizeString(filters.location, MAX_LOCATION_LENGTH);
+    let minPrice = sanitizeNumber(filters.minPrice, MIN_PRICE, MAX_PRICE);
+    let maxPrice = sanitizeNumber(filters.maxPrice, MIN_PRICE, MAX_PRICE);
+    let beds = sanitizeNumber(filters.beds, 0, MAX_BEDS_BATHS);
+    let baths = sanitizeNumber(filters.baths, 0, MAX_BEDS_BATHS);
+    let typeRaw = typeof filters.type === "string" ? filters.type.trim().toLowerCase() : "";
     if (typeRaw === "apartment" || typeRaw === "detached") typeRaw = typeRaw === "apartment" ? "condo" : "house";
     let type = ALLOWED_TYPES.includes(typeRaw) ? typeRaw : undefined;
-    const rawAmenities = Array.isArray(parsed.amenities) ? parsed.amenities : [];
+    const rawAmenities = Array.isArray(filters.amenities) ? filters.amenities : [];
     const allowedLower = Object.fromEntries(ALLOWED_AMENITIES.map((x) => [x.toLowerCase(), x]));
     const amenities = rawAmenities
       .filter((a) => typeof a === "string" && a.trim())
@@ -159,11 +173,11 @@ Output the JSON object only.`;
       else if (/\bcommercial\b/.test(qLower)) type = "commercial";
     }
     const conversationalResponse = sanitizeString(
-      parsed.conversationalResponse ?? `Showing properties matching "${query}".`,
+      filters.conversationalResponse ?? `Showing properties matching "${query}".`,
       MAX_RESPONSE_LENGTH
     ) || `Showing properties matching "${query}".`;
 
-    const hasFilters = location || minPrice != null || maxPrice != null || beds != null || baths != null || type || uniqueAmenities.length > 0 || parsed.forSaleOnly === true || parsed.forSaleOnly === false;
+    const hasFilters = location || minPrice != null || maxPrice != null || beds != null || baths != null || type || uniqueAmenities.length > 0 || filters.forSaleOnly === true || filters.forSaleOnly === false;
     if (!hasFilters) {
       return NextResponse.json(
         { location: undefined, minPrice: undefined, maxPrice: undefined, beds: undefined, baths: undefined, type: undefined, forSaleOnly: undefined, amenities: [], conversationalResponse },
@@ -172,8 +186,8 @@ Output the JSON object only.`;
     }
 
     const forSaleOnly =
-      parsed.forSaleOnly === false ? false :
-      parsed.forSaleOnly === true ? true :
+      filters.forSaleOnly === false ? false :
+      filters.forSaleOnly === true ? true :
       type != null ? true : undefined;
 
     return NextResponse.json({

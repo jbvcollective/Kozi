@@ -6,6 +6,7 @@
   "scripts": {
     "sync": "node fetchAllListingsUnified.js && node syncSoldListings.js && node runAnalyticsAndOpenHouse.js && node backfillListingsUnifiedClean.js",
     "sync-watch": "node runSyncEvery30Mins.js",
+    "sync-every-5": "node runSyncEvery30Mins.js",
     "clear-listings": "node clearListingsSupabase.js",
     "fetch-listings": "node fetchListings.js",
     "fetch-vow-listings": "node fetchVowListings.js",
@@ -19,6 +20,7 @@
     "analytics": "node computeMarketHeatAnalytics.js",
     "analytics-and-open-house": "node runAnalyticsAndOpenHouse.js",
     "backfill-clean": "node backfillListingsUnifiedClean.js",
+    "geocode-listings": "node geocodeListingsMissingCoords.js",
     "sync-google-places": "node scripts/syncGooglePlaces.js"
   },
   "engines": {

@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { mapListingToProperty } from "@/lib/propertyUtils";
 import { matchesVoiceSearchFilters } from "@/lib/voiceSearchFilters";
+import { listingsSearchBodySchema } from "@/lib/validationSchemas";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// Anon key is safe for this server-side route; RLS applies. Never use service role here unless required.
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 const CHUNK_SIZE = 1000;
@@ -15,14 +17,22 @@ export async function POST(request) {
     return NextResponse.json({ error: "Search not configured." }, { status: 503 });
   }
 
-  let body = {};
+  let body;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const filters = body.filters || {};
+  const parsed = listingsSearchBodySchema.safeParse(body ?? {});
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body.", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const filters = parsed.data.filters ?? {};
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
   // Query runs as anon; if RLS requires auth, frontend falls back to client-side filter
 

@@ -90,11 +90,11 @@ const VOW_HEADERS = { Authorization: `Bearer ${PROPTX_VOW_TOKEN}`, Accept: "appl
 const MEDIA_PAGE_SIZE = 100;
 const IDX_SELECT = ["ListingKey", ...IDX_PROPERTY_FIELDS].join(",");
 const VOW_SELECT = ["ListingKey", ...VOW_PROPERTY_FIELDS].join(",");
-/** Supabase upsert batch size (default 500). */
-const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 500, 100), 1000);
+/** Supabase upsert batch size (smaller = fewer timeouts). */
+const UPSERT_BATCH_SIZE = Math.min(Math.max(parseInt(process.env.UPSERT_BATCH_SIZE, 10) || 250, 100), 1000);
 const batchSize = UPSERT_BATCH_SIZE;
-/** Pause (ms) between batch flushes. Set FETCH_BATCH_BUFFER_MS in .env (default 2000). */
-const BATCH_BUFFER_MS = Math.max(0, parseInt(process.env.FETCH_BATCH_BUFFER_MS, 10) || 2000);
+/** Pause (ms) between batch flushes. Set FETCH_BATCH_BUFFER_MS in .env (default 3500). */
+const BATCH_BUFFER_MS = Math.max(0, parseInt(process.env.FETCH_BATCH_BUFFER_MS, 10) || 3500);
 /** Listings per scheduler run (default 10). Set SYNC_BATCH_PAGE_SIZE in .env to override. */
 const SYNC_BATCH_PAGE_SIZE = Math.min(Math.max(parseInt(process.env.SYNC_BATCH_PAGE_SIZE, 10) || 10, 1), 500);
 

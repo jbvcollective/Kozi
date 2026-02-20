@@ -26,6 +26,8 @@ export function ChosenAgentProvider({ children }) {
   const [agentCodeInput, setAgentCodeInput] = useState("");
   const [agentCodeError, setAgentCodeError] = useState(null);
   const [agentCodeLoading, setAgentCodeLoading] = useState(false);
+  const [agentList, setAgentList] = useState([]);
+  const [agentListLoading, setAgentListLoading] = useState(false);
   const agentCodePromptShownRef = useRef(false);
 
   const hasDismissedAgentPopup = useCallback(() => {
@@ -175,12 +177,12 @@ export function ChosenAgentProvider({ children }) {
     load();
   }, [load]);
 
+  // Only show "Do you have an agent code?" to users who have not yet selected an agent.
   useEffect(() => {
     if (loading || agentCodePromptShownRef.current) return;
     if (!user?.id) return;
     const meta = user.user_metadata || {};
-    const isAgent = meta.user_type === "agent";
-    if (isAgent) return;
+    if (meta.user_type === "agent") return;
     if (chosenAgent) return;
     if (typeof window === "undefined") return;
     try {
@@ -317,6 +319,53 @@ export function ChosenAgentProvider({ children }) {
     [user?.id]
   );
 
+  const selectAgentFromList = useCallback(
+    async (agentRow) => {
+      if (!user?.id || !hasSupabase() || !agentRow) return;
+      const d = agentRow.data || {};
+      const payload = {
+        agentId: agentRow.user_id ?? null,
+        agentCode: agentRow.code ?? null,
+        agentName: (d.display_name || "").trim() || "Agent",
+        brokerage: d.brokerage ?? null,
+        phone: d.phone ?? null,
+        email: d.email ?? null,
+      };
+      setAgentCodeLoading(true);
+      setAgentCodeError(null);
+      try {
+        const result = await saveChosenAgent(payload);
+        if (result?.error) {
+          setAgentCodeError(result.error?.message ?? "Could not connect. Try again.");
+          return;
+        }
+        skipNextLoadRef.current = true;
+        dismissAgentCodePrompt();
+        if (!hasDismissedAgentPopup()) setShowAgentConnectedPopup(true);
+      } finally {
+        setAgentCodeLoading(false);
+      }
+    },
+    [user?.id, saveChosenAgent, dismissAgentCodePrompt, hasDismissedAgentPopup]
+  );
+
+  useEffect(() => {
+    if (!showAgentCodePrompt || !hasSupabase()) return;
+    let cancelled = false;
+    setAgentListLoading(true);
+    supabase
+      .from("agents")
+      .select("id, user_id, code, data, is_paid")
+      .then(({ data, error: e }) => {
+        if (cancelled) return;
+        const list = (data || []).filter((a) => a.code);
+        const paid = list.filter((a) => !!(a.is_paid || (a.data || {}).agent_pro_subscribed_at));
+        setAgentList(paid.length > 0 ? paid : list);
+        setAgentListLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [showAgentCodePrompt]);
+
   const openChooseAgentModal = useCallback(() => setShowChooseModal(true), []);
   const closeChooseAgentModal = useCallback(() => setShowChooseModal(false), []);
 
@@ -431,10 +480,53 @@ export function ChosenAgentProvider({ children }) {
             >
               {agentCodeLoading ? "Connecting…" : "Connect with agent"}
             </button>
+
+            <p className="mt-5 mb-2 text-xs font-bold uppercase tracking-wider text-muted">
+              Or choose an agent
+            </p>
+            {agentListLoading ? (
+              <div className="flex items-center gap-2 py-3 text-muted">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
+                <span className="text-sm">Loading agents…</span>
+              </div>
+            ) : agentList.length > 0 ? (
+              <ul className="space-y-1.5 max-h-40 overflow-y-auto rounded-xl border border-border bg-surface p-2">
+                {agentList.map((agent) => {
+                  const d = agent.data || {};
+                  const name = (d.display_name || "").trim() || "Agent";
+                  const brokerage = (d.brokerage || "").trim() || null;
+                  return (
+                    <li key={agent.user_id ?? agent.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectAgentFromList(agent)}
+                        disabled={agentCodeLoading}
+                        className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-left text-sm transition-colors hover:border-primary/50 hover:bg-surface disabled:opacity-50"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                          {name.charAt(0).toUpperCase() || "?"}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-semibold text-foreground">{name}</span>
+                          {brokerage && (
+                            <span className="mt-0.5 block text-xs text-muted">{brokerage}</span>
+                          )}
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="rounded-lg border border-border bg-surface px-3 py-2 text-xs text-muted">
+                No agents available yet. Enter a code above if your agent gave you one.
+              </p>
+            )}
+
             <button
               type="button"
               onClick={dismissAgentCodePrompt}
-              className="mt-3 w-full rounded-xl py-2.5 text-sm font-medium text-muted hover:text-foreground transition-colors"
+              className="mt-4 w-full rounded-xl py-2.5 text-sm font-medium text-muted hover:text-foreground transition-colors"
             >
               No, skip for now
             </button>

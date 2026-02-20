@@ -908,6 +908,28 @@ export default function PropertyDetails({ property, isSaved, onToggleSave, onBac
             ))}
           </section>
 
+          {/* Mobile: price, agent, actions and financial insights before similar listings */}
+          <div className="block lg:hidden">
+            <FloatingBoxContent
+              property={property}
+              hasPriceDrop={hasPriceDrop}
+              totalSavings={totalSavings}
+              savingsPercent={savingsPercent}
+              displayBrokerage={displayBrokerage}
+              displayAgent={displayAgent}
+              displayAgentPhone={displayAgentPhone}
+              displayAgentEmail={displayAgentEmail}
+              user={user}
+              openAuthModal={openAuthModal}
+              openChooseAgentModal={openChooseAgentModal}
+              effectiveToggleSave={effectiveToggleSave}
+              effectiveIsSaved={effectiveIsSaved}
+              calculateMonthly={calculateMonthly}
+              isAgentOrBroker={isAgentOrBroker}
+              hasAgentPro={hasAgentPro}
+            />
+          </div>
+
           {/* Similar listings */}
           {(similarActive.length > 0 || similarSold.length > 0) && (
             <section className="animate-fade-in space-y-10 border-t border-border pt-12">
@@ -982,9 +1004,9 @@ export default function PropertyDetails({ property, isSaved, onToggleSave, onBac
           </aside>,
           document.body
         )}
-        {/* Mobile / narrow: sidebar in flow */}
+        {/* Mobile: FloatingBoxContent is rendered above (before similar listings). Desktop only: in-flow fallback when portal not yet mounted. */}
         {(!mounted || !useDesktop) && (
-          <aside className="w-full shrink-0 lg:w-[400px] lg:self-start" aria-label="Listing price and contact">
+          <aside className="hidden w-full shrink-0 lg:block lg:w-[400px] lg:self-start" aria-label="Listing price and contact">
             <FloatingBoxContent
               property={property}
               hasPriceDrop={hasPriceDrop}

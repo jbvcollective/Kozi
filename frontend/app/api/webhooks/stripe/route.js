@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+// Server-only. Never in NEXT_PUBLIC_* or client. Rotate in Stripe if exposed.
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(request) {

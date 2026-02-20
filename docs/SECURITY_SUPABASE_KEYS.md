@@ -1,6 +1,22 @@
-# Supabase keys & data protection
+# Keys, API keys & data protection
 
-## Secret key never exposed
+## API keys and Express (OWASP)
+
+- **No API keys in client-side code.** The frontend never sends `X-Api-Key`; it authenticates to the Express backend with **Bearer token only** (session). Do not add `NEXT_PUBLIC_API_KEY` or any secret to the client bundle.
+- **Server-to-server:** When `API_KEY` is set in the backend `.env`, callers may use either `X-Api-Key: <API_KEY>` or `Authorization: Bearer <token>`. Use `API_KEY` only from server-side env (e.g. cron or other services); never from the browser.
+- **All secrets** (API_KEY, GEMINI_API_KEY, STRIPE_*, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_PLACES_API_KEY, etc.) are loaded from environment variables only. Never hard-code or commit them. See `.env.example` and `frontend/.env.example` for lists.
+
+## Key rotation
+
+If any secret is committed, pushed, or exposed in logs/builds:
+
+1. **Rotate immediately** in the provider (Supabase, Stripe, Google Cloud, etc.).
+2. Update `.env` / `.env.local` and redeploy. Restart the Express server if it uses the key.
+3. For **API_KEY**: generate a new value, set it in backend `.env`, and update any server-to-server callers.
+4. For **STRIPE_WEBHOOK_SECRET**: create a new webhook endpoint in Stripe if needed, then set the new signing secret in env.
+5. Document the incident if required by policy.
+
+## Supabase: secret key never exposed
 
 - **Service role key** (`SUPABASE_SERVICE_ROLE_KEY`):
   - **Backend:** Root `.env` (Node scripts and Express server). Never committed.
@@ -26,7 +42,8 @@ So: **anon key + RLS + grants** ensure users can only view shared data and chang
 ## Checklist
 
 - [ ] No real keys in repo: `.env` and `.env.local` are in `.gitignore`; `frontend/.env*` is in `frontend/.gitignore`.
-- [ ] Frontend **client** env: only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. No `NEXT_PUBLIC_*` variable ever holds the service role key.
+- [ ] Frontend **client** env: only `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`. No `NEXT_PUBLIC_*` variable ever holds API keys, service role key, or Stripe/Google/Gemini secrets.
 - [ ] Backend `.env` contains `SUPABASE_SERVICE_ROLE_KEY` and is not committed (use `.env.example` without real keys).
 - [ ] If you use `SUPABASE_SERVICE_ROLE_KEY` in `frontend/.env.local` (server-only flows), that file is gitignored and never committed.
 - [ ] RLS migration applied: `sql/rls_authenticated_read_only.sql` (read-only for authenticated; explicit revokes for anon/authenticated on writes).
+- [ ] Key rotation: if any secret is exposed, rotate it in the provider and update env/deployments (see Key rotation above).

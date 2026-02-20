@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe";
+import { verifyAgentProBodySchema } from "@/lib/validationSchemas";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// Server-only. Never in NEXT_PUBLIC_* or client. Rotate in Supabase if exposed.
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function generateAgentCode(name) {
@@ -92,10 +94,16 @@ export async function POST(request) {
     let userId = null;
     try {
       const body = await request.json();
-      sessionId = typeof body?.session_id === "string" ? body.session_id.trim() : null;
-      email = typeof body?.email === "string" ? body.email.trim() : null;
-      userId = typeof body?.user_id === "string" ? body.user_id.trim() : null;
-    } catch (_) {}
+      const parsed = verifyAgentProBodySchema.safeParse(body ?? {});
+      if (!parsed.success) {
+        return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+      }
+      sessionId = parsed.data.session_id ?? null;
+      email = parsed.data.email ?? null;
+      userId = parsed.data.user_id ?? null;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
 
     // --- Mode 1: verify by session_id (redirect from Checkout Session success page) ---
     if (sessionId) {

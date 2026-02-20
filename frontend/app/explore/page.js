@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetchListings, fetchListingsSearch } from "@/lib/api";
+import { fetchListings, fetchListingsSearch, fetchListingsInBounds } from "@/lib/api";
 import { mapListingToProperty } from "@/lib/propertyUtils";
 import { parseSearchQuery, suggestSimilarSearch } from "@/lib/geminiService";
 import { useSaved } from "@/context/SavedContext";
@@ -50,6 +50,38 @@ function filterByQuery(properties, query) {
       (p.title && p.title.toLowerCase().includes(q)) ||
       (p.type && p.type.toLowerCase().includes(q))
   );
+}
+
+/** True if sidebar has any filter set (used to decide whether to fetch from Supabase search API). */
+function hasSidebarFilters(f) {
+  if (!f) return false;
+  return (
+    (f.type != null && f.type !== "") ||
+    f.forRent ||
+    f.forSale ||
+    f.minPrice != null ||
+    f.maxPrice != null ||
+    f.beds != null ||
+    f.baths != null ||
+    (f.amenities?.length > 0) ||
+    (f.minSqft != null || f.maxSqft != null) ||
+    (f.statusLabel != null && f.statusLabel !== "")
+  );
+}
+
+/** Map sidebar filter state to API shape for POST /api/listings/search (Supabase). */
+function sidebarFiltersToApiFilters(f) {
+  if (!f) return {};
+  return {
+    location: undefined,
+    minPrice: f.minPrice ?? undefined,
+    maxPrice: f.maxPrice ?? undefined,
+    beds: f.beds ?? undefined,
+    baths: f.baths ?? undefined,
+    type: (f.type && String(f.type).trim()) || undefined,
+    amenities: Array.isArray(f.amenities) && f.amenities.length > 0 ? f.amenities : undefined,
+    forSaleOnly: f.forSale ? true : f.forRent ? false : undefined,
+  };
 }
 
 function filterByFilters(properties, filters) {
@@ -132,6 +164,12 @@ function ExplorePageContent() {
   const [mounted, setMounted] = useState(false);
   const [voiceSearchRows, setVoiceSearchRows] = useState([]);
   const [loadingVoiceSearch, setLoadingVoiceSearch] = useState(false);
+  /** When sidebar filters are active, results from Supabase via /api/listings/search (server-side filter). */
+  const [filterSearchResults, setFilterSearchResults] = useState([]);
+  const [loadingFilterSearch, setLoadingFilterSearch] = useState(false);
+  /** Map viewport listings (All Listings only): loaded by bounds, not full list. */
+  const [mapProperties, setMapProperties] = useState([]);
+  const [mapPropertiesLoading, setMapPropertiesLoading] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -184,18 +222,38 @@ function ExplorePageContent() {
         setHasMoreListings(total == null || LISTINGS_PAGE_SIZE < total);
       })
       .catch((e) => {
-        if (!cancelled) {
-          setError(e.message);
-          // #region agent log
-          fetch('http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'aec536'},body:JSON.stringify({sessionId:'aec536',location:'explore/page.js:fetchListings-catch',message:'Explore fetchListings error',data:{errName:e?.name,errMessage:e?.message},timestamp:Date.now(),hypothesisId:'all'})}).catch(()=>{});
-          // #endregion
-        }
+        if (!cancelled) setError(e.message);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
   }, []);
+
+  /** When sidebar filters are active, fetch filtered listings from Supabase via /api/listings/search so filters apply to full dataset. */
+  useEffect(() => {
+    if (!hasSidebarFilters(filters)) {
+      setFilterSearchResults([]);
+      return;
+    }
+    setCurrentPage(1);
+    let cancelled = false;
+    setLoadingFilterSearch(true);
+    const apiFilters = sidebarFiltersToApiFilters(filters);
+    fetchListingsSearch(apiFilters)
+      .then((rows) => {
+        if (cancelled) return;
+        const mapped = (rows || []).map(mapListingToProperty);
+        setFilterSearchResults(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setFilterSearchResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingFilterSearch(false);
+      });
+    return () => { cancelled = true; };
+  }, [filters]);
 
   /** Teleport scroll to top of main content (instant, no animation). */
   const scrollToTopOfPage = useCallback(() => {
@@ -428,8 +486,12 @@ function ExplorePageContent() {
     const hasAiFilters = aiFilters.location || aiFilters.minPrice != null || aiFilters.maxPrice != null || aiFilters.beds != null || aiFilters.baths != null || aiFilters.type || (aiFilters.amenities?.length > 0);
     const useVoiceSearchResults = activeQuery && hasAiFilters && voiceSearchRows.length > 0;
 
-    let list = useVoiceSearchResults ? searchResultProperties : properties;
-    if (inventoryMode && !useVoiceSearchResults) {
+    let list;
+    if (useVoiceSearchResults) {
+      list = searchResultProperties;
+    } else if (hasSidebarFilters(filters)) {
+      list = filterSearchResults;
+    } else if (inventoryMode) {
       if (inventoryMode === "All Listings") list = properties;
       else if (inventoryMode === "New Arrivals") list = categorized.newListings;
       else if (inventoryMode === "Best Value") list = categorized.bestValue;
@@ -437,6 +499,9 @@ function ExplorePageContent() {
       else if (inventoryMode === "Rentals") list = categorized.rentals;
       else if (inventoryMode === "Commercial Spaces") list = categorized.commercialReductions;
       else if (inventoryMode === "Preconstruction") list = categorized.preconstruction;
+      else list = properties;
+    } else {
+      list = properties;
     }
     if (activeQuery && !useVoiceSearchResults) {
       if (hasAiFilters) {
@@ -476,22 +541,27 @@ function ExplorePageContent() {
       }
     }
     return filterByFilters(list, filters);
-  }, [properties, searchResultProperties, voiceSearchRows.length, inventoryMode, activeQuery, filters, aiFilters, categorized]);
+  }, [properties, searchResultProperties, voiceSearchRows.length, inventoryMode, activeQuery, filters, aiFilters, categorized, filterSearchResults]);
 
   const hasAiFilters = Boolean(
     aiFilters.location || aiFilters.minPrice != null || aiFilters.maxPrice != null ||
     aiFilters.beds != null || aiFilters.baths != null || aiFilters.type || (aiFilters.amenities?.length > 0)
   );
 
-  /** For "All Listings": show current page from server. For other categories: show one page slice (client-side pagination). */
+  /** For "All Listings" with no sidebar filters: one page from server. With sidebar filters or categories: slice by current page. */
   const displayProperties = useMemo(() => {
-    if (!inventoryMode || inventoryMode === "All Listings") return filteredProperties;
     const start = (currentPage - 1) * LISTINGS_PAGE_SIZE;
+    if (hasSidebarFilters(filters)) return filteredProperties.slice(start, start + LISTINGS_PAGE_SIZE);
+    if (!inventoryMode || inventoryMode === "All Listings") return filteredProperties;
     return filteredProperties.slice(start, start + LISTINGS_PAGE_SIZE);
-  }, [inventoryMode, currentPage, filteredProperties]);
+  }, [inventoryMode, currentPage, filteredProperties, filters]);
 
-  /** Total count for pagination: API total for All Listings, else length of filtered list for categories. */
-  const totalForPagination = inventoryMode === "All Listings" ? (totalCount ?? 0) : filteredProperties.length;
+  /** Total count for pagination: when sidebar filters are active we use filtered list length; else API total for All Listings or category length. */
+  const totalForPagination = hasSidebarFilters(filters)
+    ? filteredProperties.length
+    : inventoryMode === "All Listings"
+      ? (totalCount ?? 0)
+      : filteredProperties.length;
   const totalPagesForPagination = Math.max(1, Math.ceil(totalForPagination / LISTINGS_PAGE_SIZE));
   const isCategoryPagination = inventoryMode && inventoryMode !== "All Listings";
 
@@ -527,9 +597,50 @@ function ExplorePageContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const selectProperty = useCallback((property) => {
-    if (property?.id) window.location.href = `/listings/${property.id}`;
-  }, []);
+  /** Build the URL we want to return to when user clicks "Back to results" on the listing page. */
+  const returnToUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    if (seeAllParam) params.set("seeAll", seeAllParam);
+    if (queryParam?.trim()) params.set("q", queryParam.trim());
+    const search = params.toString();
+    return search ? `/explore?${search}` : "/explore";
+  }, [seeAllParam, queryParam]);
+
+  const listingUrl = useCallback(
+    (id) => {
+      const base = `/listings/${id}`;
+      const params = new URLSearchParams();
+      params.set("from", returnToUrl);
+      return `${base}?${params.toString()}`;
+    },
+    [returnToUrl]
+  );
+
+  const selectProperty = useCallback(
+    (property) => {
+      if (property?.id) window.location.href = listingUrl(property.id);
+    },
+    [listingUrl]
+  );
+
+  /** Load listings for the visible map bounds (View All → map). Only used when inventoryMode === "All Listings". */
+  const handleBoundsChange = useCallback((bounds) => {
+    if (inventoryMode !== "All Listings") return;
+    setMapPropertiesLoading(true);
+    fetchListingsInBounds({ ...bounds, limit: 500 })
+      .then((rows) => {
+        const mapped = (rows || []).map(mapListingToProperty);
+        setMapProperties(mapped);
+      })
+      .catch(() => setMapProperties([]))
+      .finally(() => setMapPropertiesLoading(false));
+  }, [inventoryMode]);
+
+  /** For All Listings map: apply sidebar filters client-side to viewport-loaded pins. */
+  const mapPropertiesForMap = useMemo(() => {
+    if (inventoryMode !== "All Listings") return [];
+    return hasSidebarFilters(filters) ? filterByFilters(mapProperties, filters) : mapProperties;
+  }, [inventoryMode, mapProperties, filters]);
 
   const activeCategory = inventoryMode ? (SECTION_TO_CATEGORY[inventoryMode] || "all") : "all";
 
@@ -576,7 +687,7 @@ function ExplorePageContent() {
                   property={p}
                   isSaved={savedIds.includes(p.id)}
                   onToggleSave={toggleSave}
-                  href={`/listings/${p.id}`}
+                  href={listingUrl(p.id)}
                 />
               </div>
             ))}
@@ -769,30 +880,36 @@ function ExplorePageContent() {
               )}
               <div className="min-w-0 flex-1 space-y-6 sm:space-y-8 md:space-y-12">
                 <div id="explore-listings-grid" ref={listingsGridRef} className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-x-5 lg:gap-y-6 xl:gap-x-6 xl:gap-y-8 transition-all duration-500 min-w-0 w-full">
-                  {displayProperties.length > 0 ? (
+                  {loadingFilterSearch ? (
+                    <div className="col-span-full py-16 sm:py-24 text-center">
+                      <p className="text-lg font-bold text-muted">Filtering listings from database…</p>
+                    </div>
+                  ) : displayProperties.length > 0 ? (
                     displayProperties.map((p) => (
                       <PropertyCard
                         key={p.id}
                         property={p}
                         isSaved={savedIds.includes(p.id)}
                         onToggleSave={toggleSave}
-                        href={`/listings/${p.id}`}
+                        href={listingUrl(p.id)}
                       />
                     ))
                   ) : (
                     <div className="col-span-full py-16 sm:py-24 md:py-40 text-center space-y-4 md:space-y-6">
                       <p className="text-xl sm:text-2xl md:text-4xl font-black tracking-tight text-muted italic px-4">
-                        {inventoryMode && inventoryMode !== "All Listings"
-                          ? "No listings in this category yet. We'll update soon."
-                          : activeQuery
-                            ? loadingSimilar
-                              ? "No exact matches. Finding similar listings…"
-                              : properties.length === 0
-                                ? "Sign in to load listings, then try your search again."
-                                : suggestionApplied
-                                  ? "No similar listings found. Try a different city, type (condo, house), or price."
-                                  : "No listings match your search. Try a city (e.g. Toronto, Vancouver), type (condo, house), or price (under $800K). Sign in to load listings."
-                            : "No matches in the current database."}
+                        {hasSidebarFilters(filters) && !loadingFilterSearch
+                          ? "No listings match your filters. Try a different property type, price range, or beds/baths."
+                          : inventoryMode && inventoryMode !== "All Listings"
+                              ? "No listings in this category yet. We'll update soon."
+                              : activeQuery
+                                ? loadingSimilar
+                                  ? "No exact matches. Finding similar listings…"
+                                  : properties.length === 0
+                                    ? "Sign in to load listings, then try your search again."
+                                    : suggestionApplied
+                                      ? "No similar listings found. Try a different city, type (condo, house), or price."
+                                      : "No listings match your search. Try a city (e.g. Toronto, Vancouver), type (condo, house), or price (under $800K). Sign in to load listings."
+                                : "No matches in the current database."}
                       </p>
                       <a href={inventoryMode && inventoryMode !== "All Listings" ? "/explore" : "/"} className="btn-primary inline-block px-10 py-4 rounded-xl">
                         {inventoryMode && inventoryMode !== "All Listings" ? "Back to Explore" : "Try search or voice"}
@@ -800,7 +917,7 @@ function ExplorePageContent() {
                     </div>
                   )}
 
-                {filteredProperties.length > 0 && inventoryMode && totalForPagination > LISTINGS_PAGE_SIZE && (
+                {filteredProperties.length > 0 && (inventoryMode || hasSidebarFilters(filters)) && totalForPagination > LISTINGS_PAGE_SIZE && (
                   <div className="col-span-full flex flex-col items-center gap-4 pt-8 pb-4">
                     <p className="text-sm font-semibold text-muted">
                       Page {currentPage} of {totalPagesForPagination}
@@ -881,14 +998,25 @@ function ExplorePageContent() {
                 )}
                 </div>
 
-                {filteredProperties.length > 0 && (
+                {(filteredProperties.length > 0 || inventoryMode === "All Listings") && (
                   <div className="space-y-4 md:space-y-8 animate-fade-in pt-12 md:pt-20 border-t border-gray-100">
                     <div>
                       <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Geospatial Discovery.</h2>
-                      <p className="mt-1 text-sm sm:text-base md:text-lg font-medium text-muted">Every architectural sanctuary in your results, mapped.</p>
+                      <p className="mt-1 text-sm sm:text-base md:text-lg font-medium text-muted">
+                        {inventoryMode === "All Listings" ? "Pan or zoom to load listings in the visible area. Pins show price." : "Every architectural sanctuary in your results, mapped."}
+                      </p>
                     </div>
-                    <div className="h-[320px] sm:h-[420px] md:h-[550px] lg:h-[700px] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border transition-premium" style={{ boxShadow: "var(--shadow-elevated)" }}>
-                      <PropertyMap properties={filteredProperties} onSelectProperty={selectProperty} />
+                    <div className="relative h-[320px] sm:h-[420px] md:h-[550px] lg:h-[700px] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border transition-premium" style={{ boxShadow: "var(--shadow-elevated)" }}>
+                      {mapPropertiesLoading && inventoryMode === "All Listings" && (
+                        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/10 rounded-xl md:rounded-3xl">
+                          <span className="rounded-xl bg-white/95 px-4 py-2 text-sm font-bold text-foreground shadow-lg">Loading listings for this area…</span>
+                        </div>
+                      )}
+                      <PropertyMap
+                        properties={inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties}
+                        onSelectProperty={selectProperty}
+                        onBoundsChange={inventoryMode === "All Listings" ? handleBoundsChange : undefined}
+                      />
                     </div>
                   </div>
                 )}
@@ -896,8 +1024,17 @@ function ExplorePageContent() {
               </div>
             </div>
           ) : (
-            <div className="h-[calc(100vh-180px)] sm:h-[calc(100vh-220px)] md:h-[calc(100vh-250px)] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border" style={{ boxShadow: "var(--shadow-elevated)" }}>
-              <PropertyMap properties={filteredProperties} onSelectProperty={selectProperty} />
+            <div className="relative h-[calc(100vh-180px)] sm:h-[calc(100vh-220px)] md:h-[calc(100vh-250px)] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border" style={{ boxShadow: "var(--shadow-elevated)" }}>
+              {mapPropertiesLoading && inventoryMode === "All Listings" && (
+                <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/10 rounded-xl md:rounded-3xl">
+                  <span className="rounded-xl bg-white/95 px-4 py-2 text-sm font-bold text-foreground shadow-lg">Loading listings for this area…</span>
+                </div>
+              )}
+              <PropertyMap
+                properties={inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties}
+                onSelectProperty={selectProperty}
+                onBoundsChange={inventoryMode === "All Listings" ? handleBoundsChange : undefined}
+              />
             </div>
           )}
         </div>

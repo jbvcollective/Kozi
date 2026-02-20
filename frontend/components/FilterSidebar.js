@@ -67,7 +67,7 @@ function sqftLabelToRange(label) {
 }
 
 export default function FilterSidebar({ isVisible, onFilterChange }) {
-  const [openSections, setOpenSections] = useState(["listingType", "price", "beds", "baths"]);
+  const [openSections, setOpenSections] = useState(["propertyType", "listingType", "price", "beds", "baths"]);
   const [selected, setSelected] = useState({
     propertyType: null,
     listingType: null,
@@ -133,22 +133,42 @@ export default function FilterSidebar({ isVisible, onFilterChange }) {
 
   return (
     <aside className="w-full flex-shrink-0 lg:w-64 xl:w-72 pr-0 lg:pr-8">
-      <div className="space-y-1 mb-10">
-        {propertyTypes.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => handleOptionClick("propertyType", cat)}
-            className={`block w-full text-left py-2 px-3 rounded-lg text-[15px] font-medium transition-premium ${selected.propertyType === cat ? "text-primary font-bold bg-primary/5" : "text-muted hover:text-foreground hover:bg-surface"}`}
+      <div className="py-4 border-b border-border">
+        <button
+          type="button"
+          onClick={() => toggleSection("propertyType")}
+          className="flex items-center justify-between w-full group py-2 rounded-lg hover:bg-surface transition-premium"
+        >
+          <span className="text-[15px] font-medium text-foreground">Property Type</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-4 w-4 text-muted transition-premium ${openSections.includes("propertyType") ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            {cat}
-          </button>
-        ))}
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {openSections.includes("propertyType") && (
+          <div className="mt-2 space-y-1 animate-fade-in">
+            {propertyTypes.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => handleOptionClick("propertyType", cat)}
+                className={`block w-full text-left py-2 px-3 rounded-lg text-[15px] font-medium transition-premium ${selected.propertyType === cat ? "text-primary font-bold bg-primary/5" : "text-muted hover:text-foreground hover:bg-surface"}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="space-y-4 border-t border-border pt-6">
+      <div>
         {filterGroups.map((group) => (
-          <div key={group.id} className="border-b border-border pb-4">
+          <div key={group.id} className="py-4 border-b border-border">
             <button
               type="button"
               onClick={() => toggleSection(group.id)}
@@ -174,21 +194,18 @@ export default function FilterSidebar({ isVisible, onFilterChange }) {
                       ? selected.amenities.includes(option)
                       : selected[group.id] === option;
                   return (
-                    <label key={option} className="flex items-center space-x-3 cursor-pointer group py-1">
+                    <label
+                      key={option}
+                      className="flex items-center space-x-3 cursor-pointer group py-1"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOptionClick(group.id, option);
+                      }}
+                    >
                       <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleOptionClick(group.id, option);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleOptionClick(group.id, option);
-                          }
-                        }}
-                        className={`w-5 h-5 border rounded-md flex items-center justify-center transition-premium group-hover:border-primary ${
+                        role="presentation"
+                        aria-hidden
+                        className={`w-5 h-5 border rounded-md flex items-center justify-center transition-premium group-hover:border-primary pointer-events-none ${
                           isSelected ? "border-primary bg-primary" : "border-border"
                         }`}
                       >
@@ -200,7 +217,7 @@ export default function FilterSidebar({ isVisible, onFilterChange }) {
                           <div className="w-2 h-2 bg-primary rounded-sm opacity-0 group-hover:opacity-30" />
                         )}
                       </div>
-                      <span className="text-sm font-normal text-foreground group-hover:text-primary">{option}</span>
+                      <span className="text-sm font-normal text-foreground group-hover:text-primary select-none">{option}</span>
                     </label>
                   );
                 })}

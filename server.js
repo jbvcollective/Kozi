@@ -16,13 +16,18 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProd = NODE_ENV === "production";
 
+// --- Secrets: load from environment only. Never hard-code or commit. Rotate if exposed. ---
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const API_KEY = process.env.API_KEY; // Optional: server-to-server auth. Never use NEXT_PUBLIC_* for this.
+
 const CORS_ORIGIN = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || "http://localhost:3001";
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const BODY_LIMIT = process.env.BODY_LIMIT || "256kb";
 const REQUEST_TIMEOUT_MS = parseInt(process.env.REQUEST_TIMEOUT_MS, 10) || 30000;
-const API_KEY = process.env.API_KEY;
+const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 60 * 1000;
+const RATE_LIMIT_MAX_GLOBAL = parseInt(process.env.RATE_LIMIT_MAX_GLOBAL, 10) || 200;
+const RATE_LIMIT_MAX_STRICT = parseInt(process.env.RATE_LIMIT_MAX_STRICT, 10) || 60;
 
 const requiredEnv = [
   ["SUPABASE_URL", SUPABASE_URL],
@@ -45,6 +50,23 @@ const publicDir = path.join(__dirname, "public");
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
+
+async function getAuthenticatedUser(req) {
+  const authHeader = req.headers?.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  if (!token) return null;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    return !error && user ? user : null;
+  } catch {
+    return null;
+  }
+}
+
+async function isAuthenticated(req) {
+  const user = await getAuthenticatedUser(req);
+  return !!user;
+}
 
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3001";
 
@@ -85,74 +107,116 @@ app.use((req, res, next) => {
   next();
 });
 
+function rateLimitHandler(req, res) {
+  const sec = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+  res.setHeader("Retry-After", String(sec));
+  res.status(429).json({
+    error: "Too many requests. Please try again later.",
+    retryAfterSeconds: sec,
+  });
+}
+
+app.use("/api", async (req, res, next) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+    const ip = req.ip || req.socket?.remoteAddress || "unknown";
+    req.rateLimitKey = user?.id ? `${ip}:${user.id}` : ip;
+  } catch {
+    req.rateLimitKey = req.ip || req.socket?.remoteAddress || "unknown";
+  }
+  next();
+});
+
 const globalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 200,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_GLOBAL,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || req.socket?.remoteAddress || "unknown",
+  keyGenerator: (req) => req.rateLimitKey || req.ip || req.socket?.remoteAddress || "unknown",
+  handler: rateLimitHandler,
 });
 app.use("/api", globalLimiter);
 
 const strictLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 60,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_STRICT,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || req.socket?.remoteAddress || "unknown",
+  keyGenerator: (req) => req.rateLimitKey || req.ip || req.socket?.remoteAddress || "unknown",
+  handler: rateLimitHandler,
 });
 
+// OWASP: API key used only for server-to-server. Browser clients use Bearer token only (no key in client bundle).
 if (API_KEY) {
   app.use("/api", (req, res, next) => {
-    const key = req.headers["x-api-key"];
-    if (key === API_KEY) return next();
+    const apiKey = req.headers["x-api-key"];
+    const bearer = req.headers.authorization?.startsWith?.("Bearer ");
+    if (apiKey === API_KEY || bearer) return next();
     res.status(401).json({ error: "Unauthorized" });
   });
 }
 
 app.use(express.json({ limit: BODY_LIMIT, strict: true }));
 
-async function isAuthenticated(req) {
-  const authHeader = req.headers?.authorization;
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
-  if (!token) return false;
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    return !error && !!user;
-  } catch {
-    return false;
-  }
-}
-
-async function getAuthenticatedUser(req) {
-  const authHeader = req.headers?.authorization;
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
-  if (!token) return null;
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    return !error && user ? user : null;
-  } catch {
-    return null;
-  }
-}
-
 const listingsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(MAX_LISTINGS_LIMIT).default(MAX_LISTINGS_LIMIT),
-});
+}).strict();
 
 const soldListingsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(MAX_LISTINGS_LIMIT).default(MAX_LISTINGS_LIMIT),
-});
+}).strict();
 
 const schoolsQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
   limit: z.coerce.number().int().min(1).max(50).default(10),
-});
+}).strict();
 
 const listingIdSchema = z.string().min(1).max(200).regex(/^[a-zA-Z0-9_.-]+$/);
+
+const listingsInBoundsQuerySchema = z.object({
+  minLat: z.coerce.number().min(-90).max(90),
+  maxLat: z.coerce.number().min(-90).max(90),
+  minLng: z.coerce.number().min(-180).max(180),
+  maxLng: z.coerce.number().min(-180).max(180),
+  limit: z.coerce.number().int().min(1).max(1000).optional().default(500),
+}).strict().refine((d) => d.minLat < d.maxLat && d.minLng < d.maxLng, {
+  message: "min must be less than max for lat and lng",
+});
+
+app.get("/api/listings/in-bounds", strictLimiter, async (req, res) => {
+  const parsed = listingsInBoundsQuerySchema.safeParse({
+    minLat: req.query.minLat,
+    maxLat: req.query.maxLat,
+    minLng: req.query.minLng,
+    maxLng: req.query.maxLng,
+    limit: req.query.limit,
+  });
+  if (!parsed.success) {
+    return res.status(400).json(isProd ? { error: "Invalid query" } : { error: "Invalid query", details: parsed.error.flatten() });
+  }
+  const { minLat, maxLat, minLng, maxLng, limit } = parsed.data;
+  if (!(await isAuthenticated(req))) {
+    return res.status(401).json({ error: "Login required to view listings." });
+  }
+  try {
+    const { data, error } = await supabase.rpc("listings_in_bounds", {
+      min_lat: minLat,
+      max_lat: maxLat,
+      min_lng: minLng,
+      max_lng: maxLng,
+      max_count: limit,
+    });
+    if (error) {
+      return res.status(500).json({ error: safeSupabaseError() });
+    }
+    res.json({ data: data ?? [] });
+  } catch {
+    res.status(500).json({ error: safeSupabaseError() });
+  }
+});
 
 app.get("/api/listings", strictLimiter, async (req, res, next) => {
   const ip = req.ip || req.socket?.remoteAddress;
@@ -164,7 +228,7 @@ app.get("/api/listings", strictLimiter, async (req, res, next) => {
   paginationLastReq.set(ip, now);
   setTimeout(() => paginationLastReq.delete(ip), 60000);
 
-  const parsed = listingsQuerySchema.safeParse(req.query);
+  const parsed = listingsQuerySchema.safeParse({ page: req.query.page, limit: req.query.limit });
   if (!parsed.success) {
     return res.status(400).json(isProd ? { error: "Invalid query" } : { error: "Invalid query", details: parsed.error.flatten() });
   }
@@ -198,7 +262,7 @@ app.get("/api/listings", strictLimiter, async (req, res, next) => {
 });
 
 app.get("/api/listings/sold", strictLimiter, async (req, res, next) => {
-  const parsed = soldListingsQuerySchema.safeParse(req.query);
+  const parsed = soldListingsQuerySchema.safeParse({ page: req.query.page, limit: req.query.limit });
   if (!parsed.success) {
     return res.status(400).json(isProd ? { error: "Invalid query" } : { error: "Invalid query", details: parsed.error.flatten() });
   }
@@ -280,7 +344,7 @@ app.get("/api/analytics", strictLimiter, async (req, res) => {
   }
 });
 
-const aiSearchBodySchema = z.object({ query: z.string().min(1).max(500).trim() });
+const aiSearchBodySchema = z.object({ query: z.string().min(1).max(500).trim() }).strict();
 
 app.post("/api/ai-search", strictLimiter, async (req, res) => {
   const parsed = aiSearchBodySchema.safeParse(req.body);
@@ -349,6 +413,7 @@ async function fetchSchoolsFromTable(sb, table, lat, lng, delta) {
   return { data: r3.data ?? [], error: r3.error };
 }
 
+// Server-only. Never expose in client or NEXT_PUBLIC_*.
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
 const PLACES_NEARBY_URL = "https://places.googleapis.com/v1/places:searchNearby";
 const SCHOOL_TYPES = ["preschool", "primary_school", "secondary_school", "school", "university", "educational_institution"];
@@ -427,11 +492,9 @@ async function fetchSchoolsFromGooglePlaces(apiKey, lat, lng, limit = 20) {
 }
 
 app.get("/api/schools", strictLimiter, async (req, res) => {
-  const parsed = schoolsQuerySchema.safeParse({
-    lat: req.query.lat ?? req.query.latitude ?? req.query.LATITUDE,
-    lng: req.query.lng ?? req.query.longitude ?? req.query.LONGITUDE,
-    limit: req.query.limit,
-  });
+  const latRaw = req.query.lat ?? req.query.latitude ?? req.query.LATITUDE;
+  const lngRaw = req.query.lng ?? req.query.longitude ?? req.query.LONGITUDE;
+  const parsed = schoolsQuerySchema.safeParse({ lat: latRaw, lng: lngRaw, limit: req.query.limit });
   if (!parsed.success) {
     return res.status(400).json(isProd ? { error: "Invalid query" } : { error: "Invalid query", details: parsed.error.flatten() });
   }
@@ -544,7 +607,12 @@ app.use((err, req, res, next) => {
     return res.status(403).json({ error: "Forbidden" });
   }
   if (err.status === 429) {
-    return res.status(429).json({ error: "Too many requests" });
+    const sec = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+    res.setHeader("Retry-After", String(sec));
+    return res.status(429).json({
+      error: "Too many requests. Please try again later.",
+      retryAfterSeconds: sec,
+    });
   }
   const status = err.statusCode || err.status || 500;
   const message = isProd ? "An error occurred." : (err.message || "Internal server error");

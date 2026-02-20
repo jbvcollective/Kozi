@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { latLngLimitQuerySchema } from "@/lib/validationSchemas";
 
 const PLACES_NEARBY_URL = "https://places.googleapis.com/v1/places:searchNearby";
 const FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount";
@@ -53,6 +54,7 @@ const parseAddr = (formattedAddress) => {
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // Prefer service role server-side; fallback to anon. Never expose service role to client.
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   return createClient(url, key);
@@ -108,13 +110,18 @@ async function fetchTypeFromGoogle(apiKey, lat, lng, includedTypes) {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const lat = parseFloat(searchParams.get("lat"));
-  const lng = parseFloat(searchParams.get("lng"));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    return NextResponse.json({ error: "Invalid lat or lng." }, { status: 400 });
+  const parsed = latLngLimitQuerySchema.safeParse({
+    lat: searchParams.get("lat"),
+    lng: searchParams.get("lng"),
+    limit: searchParams.get("limit"),
+  });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid query. Require lat (-90..90), lng (-180..180), optional limit (1..50)." },
+      { status: 400 }
+    );
   }
+  const { lat, lng, limit } = parsed.data;
 
   // Try Supabase cache first (fast, no API cost)
   const cached = await fetchFromSupabase(lat, lng, limit);
@@ -123,6 +130,7 @@ export async function GET(request) {
   }
 
   // Fall back to Google Places API (live)
+  // Server-only. Never in NEXT_PUBLIC_* or client bundle.
   const apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "Schools API not configured." }, { status: 503 });
