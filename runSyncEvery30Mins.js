@@ -1,14 +1,15 @@
 /**
  * Scheduler: run the full sync every N minutes with a buffer between runs.
- * Each run: fetch one batch of listings from PropTx (IDX + VOW) → listings_unified → sold_listings → analytics + open_house → listings_unified_clean.
+ * Each run (npm run sync): fetch → sold listings → analytics + open house → backfill listings_unified_clean → geocode lat/long.
  *
- * Start: npm run sync-every-5  or  npm run sync-watch   (runs full sync every 5 min by default)
+ * Start: npm run sync-watch  or  npm run sync-every-5   (runs full sync every 5 min by default)
  * Stop with Ctrl+C.
  *
  * Set in .env:
  *   SYNC_INTERVAL_MINUTES=5   — minimum minutes between run starts (default 5)
- *   SYNC_BUFFER_SECONDS=90    — minimum seconds to wait after a run ends before next start (default 90; increase if Supabase times out)
- *   SYNC_BATCH_PAGE_SIZE=10   — listings per batch (default 10); offset in .last-proptx-sync-offset
+ *   SYNC_BUFFER_SECONDS=90   — minimum seconds to wait after a run ends before next start (default 90; increase if Supabase times out)
+ *   SYNC_BATCH_PAGE_SIZE=10  — listings per batch (default 10); offset in .last-proptx-sync-offset
+ *   GEOCODING_API_KEY        — required for geocode step (lat/long backfill)
  */
 
 import { spawn } from "child_process";
@@ -21,7 +22,7 @@ const BUFFER_MS = BUFFER_SECONDS * 1000;
 function runSync() {
   const runStart = Date.now();
   const start = new Date().toISOString();
-  console.log(`[${start}] Starting sync (PropTx → listings_unified → sold → analytics → backfill)...`);
+  console.log(`[${start}] Starting sync (fetch → sold → analytics + open house → backfill clean → geocode lat/long)...`);
   const child = spawn("npm", ["run", "sync"], {
     stdio: "inherit",
     shell: true,

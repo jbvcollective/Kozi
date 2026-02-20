@@ -10,7 +10,7 @@ import { useSaved } from "@/context/SavedContext";
 import PropertyCard from "@/components/PropertyCard";
 import FilterSidebar from "@/components/FilterSidebar";
 import { CATEGORIES } from "@/constants/categories";
-import PropertyMap from "@/components/PropertyMap";
+import PropertyMap, { loadGoogleMapsScript } from "@/components/PropertyMap";
 import Loading from "@/components/Loading";
 import RequireAuth from "@/components/RequireAuth";
 
@@ -178,6 +178,15 @@ function ExplorePageContent() {
   const [mapListingType, setMapListingType] = useState("all");
 
   useEffect(() => setMounted(true), []);
+
+  // Preload Google Maps script so Map Only view renders quickly when user switches to it
+  useEffect(() => {
+    if (!mounted || typeof window === "undefined") return;
+    const apiKey =
+      (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim()) ||
+      (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY?.trim());
+    if (apiKey) loadGoogleMapsScript(apiKey).catch(() => {});
+  }, [mounted]);
 
   useEffect(() => {
     propertyMapRef.current?.setMapType?.(mapType);

@@ -498,4 +498,5 @@ const PropertyMapComponent = forwardRef(function PropertyMap(
   );
 });
 
+export { loadGoogleMapsScript };
 export default PropertyMapComponent;

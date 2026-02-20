@@ -4,7 +4,7 @@
   "description": "Node.js backend (Express + Supabase) for VestaHome",
   "type": "module",
   "scripts": {
-    "sync": "node fetchAllListingsUnified.js && node syncSoldListings.js && node runAnalyticsAndOpenHouse.js && node backfillListingsUnifiedClean.js",
+    "sync": "node fetchAllListingsUnified.js && node syncSoldListings.js && node runAnalyticsAndOpenHouse.js && node backfillListingsUnifiedClean.js && node geocodeListingsMissingCoords.js",
     "sync-watch": "node runSyncEvery30Mins.js",
     "sync-every-5": "node runSyncEvery30Mins.js",
     "clear-listings": "node clearListingsSupabase.js",

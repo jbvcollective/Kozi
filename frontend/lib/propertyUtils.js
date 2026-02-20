@@ -245,5 +245,15 @@ export function mapListingToProperty(row) {
     listedAt: listedAtMs,
     status,
     openHouse: openHouse || undefined,
+    virtualTour:
+      merged.VirtualTourURLUnbranded && String(merged.VirtualTourURLUnbranded).trim()
+        ? String(merged.VirtualTourURLUnbranded).trim()
+        : merged.VirtualTourURLBranded && String(merged.VirtualTourURLBranded).trim()
+          ? String(merged.VirtualTourURLBranded).trim()
+          : undefined,
+    units: (() => {
+      const n = Number(merged.NumberOfUnits ?? merged.TotalUnits ?? merged.NumberOfBuildings);
+      return Number.isFinite(n) && n > 0 ? n : undefined;
+    })(),
   };
 }
