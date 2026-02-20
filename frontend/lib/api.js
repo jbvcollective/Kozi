@@ -83,12 +83,12 @@ export async function fetchListingsSearch(filters) {
 
 /**
  * Fetch listings within map viewport bounds. Use for View All map so only the visible area is loaded.
- * Calls backend GET /api/listings/in-bounds when NEXT_PUBLIC_API_URL is set; otherwise Supabase RPC when configured.
- * @param {{ minLat: number, maxLat: number, minLng: number, maxLng: number, limit?: number }} options
+ * Uses Next.js API route /api/listings/in-bounds (proxies to backend when NEXT_PUBLIC_API_URL is set, else Supabase + geocoding fallback).
+ * @param {{ minLat: number, maxLat: number, minLng: number, maxLng: number, limit?: number, type?: 'all'|'residential'|'commercial' }} options
  * @returns {Promise<Array<{ listing_key: string, idx: object, vow: object, updated_at: string }>>} Raw rows; map with mapListingToProperty().
  */
 export async function fetchListingsInBounds(options = {}) {
-  const { minLat, maxLat, minLng, maxLng, limit = 500 } = options;
+  const { minLat, maxLat, minLng, maxLng, limit = 500, type = "all" } = options;
   if (
     minLat == null || maxLat == null || minLng == null || maxLng == null ||
     !Number.isFinite(minLat) || !Number.isFinite(maxLat) || !Number.isFinite(minLng) || !Number.isFinite(maxLng)
@@ -98,43 +98,28 @@ export async function fetchListingsInBounds(options = {}) {
   const session = await getSession();
   if (!session) return [];
 
-  if (API_BASE) {
-    const params = new URLSearchParams({
-      minLat: String(minLat),
-      maxLat: String(maxLat),
-      minLng: String(minLng),
-      maxLng: String(maxLng),
-      limit: String(Math.min(limit, 1000)),
-    });
-    const url = `${API_BASE}/api/listings/in-bounds?${params.toString()}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    try {
-      const res = await fetch(url, { cache: "no-store", signal: controller.signal, headers: getApiHeaders(session) });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error(res.status === 401 ? "Sign in to view listings." : res.statusText || "Request failed");
-      const json = await parseJson(res, url);
-      return Array.isArray(json?.data) ? json.data : [];
-    } catch (e) {
-      clearTimeout(timeoutId);
-      if (e?.name === "AbortError") throw new Error("Map listings request timed out.");
-      throw e;
-    }
+  const params = new URLSearchParams({
+    minLat: String(minLat),
+    maxLat: String(maxLat),
+    minLng: String(minLng),
+    maxLng: String(maxLng),
+    limit: String(Math.min(limit, 1000)),
+  });
+  if (type && type !== "all") params.set("type", type);
+  const url = `/api/listings/in-bounds?${params.toString()}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: controller.signal, headers: getApiHeaders(session) });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error(res.status === 401 ? "Sign in to view listings." : res.statusText || "Request failed");
+    const json = await parseJson(res, url);
+    return Array.isArray(json?.data) ? json.data : [];
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (e?.name === "AbortError") throw new Error("Map listings request timed out.");
+    throw e;
   }
-
-  if (hasSupabase()) {
-    const { data, error } = await supabase.rpc("listings_in_bounds", {
-      min_lat: minLat,
-      max_lat: maxLat,
-      min_lng: minLng,
-      max_lng: maxLng,
-      max_count: Math.min(limit, 1000),
-    });
-    if (error) throw new Error(error.message || "Map listings failed.");
-    return Array.isArray(data) ? data : [];
-  }
-
-  return [];
 }
 
 /** Fetch listings from listings_unified_clean. Login required; no data for anonymous users. Uses Supabase when configured (RLS: authenticated read-only). Fetches in chunks to return all requested rows. When options.includeCount is true, returns { data, total } instead of an array. */

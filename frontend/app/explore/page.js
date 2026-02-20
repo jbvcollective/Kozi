@@ -155,6 +155,8 @@ function ExplorePageContent() {
   const [filters, setFilters] = useState({});
   const [inventoryMode, setInventoryMode] = useState(seeAllParam);
   const listingsGridRef = useRef(null);
+  const propertyMapRef = useRef(null);
+  const lastMapBoundsRef = useRef(null);
   const [activeQuery, setActiveQuery] = useState(queryParam || null);
   const [aiResponseText, setAiResponseText] = useState(null);
   const [aiFilters, setAiFilters] = useState({});
@@ -170,8 +172,16 @@ function ExplorePageContent() {
   /** Map viewport listings (All Listings only): loaded by bounds, not full list. */
   const [mapProperties, setMapProperties] = useState([]);
   const [mapPropertiesLoading, setMapPropertiesLoading] = useState(false);
+  /** Map type: 'roadmap' | 'satellite'. */
+  const [mapType, setMapType] = useState("roadmap");
+  /** Map listing type: 'all' | 'residential' | 'commercial'. */
+  const [mapListingType, setMapListingType] = useState("all");
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    propertyMapRef.current?.setMapType?.(mapType);
+  }, [mapType]);
 
   /** When user returns to the tab, refetch current page so updated listings (from sync) appear. Throttled to once per 60s. */
   const lastRefetchRef = useRef(0);
@@ -626,15 +636,29 @@ function ExplorePageContent() {
   /** Load listings for the visible map bounds (View All → map). Only used when inventoryMode === "All Listings". */
   const handleBoundsChange = useCallback((bounds) => {
     if (inventoryMode !== "All Listings") return;
+    lastMapBoundsRef.current = bounds;
     setMapPropertiesLoading(true);
-    fetchListingsInBounds({ ...bounds, limit: 500 })
+    fetchListingsInBounds({ ...bounds, limit: 500, type: mapListingType })
       .then((rows) => {
         const mapped = (rows || []).map(mapListingToProperty);
         setMapProperties(mapped);
       })
       .catch(() => setMapProperties([]))
       .finally(() => setMapPropertiesLoading(false));
-  }, [inventoryMode]);
+  }, [inventoryMode, mapListingType]);
+
+  /** Refetch map listings when Residential/Commercial filter changes. */
+  useEffect(() => {
+    if (inventoryMode !== "All Listings" || !lastMapBoundsRef.current) return;
+    setMapPropertiesLoading(true);
+    fetchListingsInBounds({ ...lastMapBoundsRef.current, limit: 500, type: mapListingType })
+      .then((rows) => {
+        const mapped = (rows || []).map(mapListingToProperty);
+        setMapProperties(mapped);
+      })
+      .catch(() => setMapProperties([]))
+      .finally(() => setMapPropertiesLoading(false));
+  }, [mapListingType]);
 
   /** For All Listings map: apply sidebar filters client-side to viewport-loaded pins. */
   const mapPropertiesForMap = useMemo(() => {
@@ -1007,12 +1031,59 @@ function ExplorePageContent() {
                       </p>
                     </div>
                     <div className="relative h-[320px] sm:h-[420px] md:h-[550px] lg:h-[700px] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border transition-premium" style={{ boxShadow: "var(--shadow-elevated)" }}>
-                      {mapPropertiesLoading && inventoryMode === "All Listings" && (
-                        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/10 rounded-xl md:rounded-3xl">
-                          <span className="rounded-xl bg-white/95 px-4 py-2 text-sm font-bold text-foreground shadow-lg">Loading listings for this area…</span>
+                      <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2">
+                        <div className="rounded-lg border border-border bg-surface-elevated/95 px-3 py-2 text-sm font-bold text-foreground shadow-sm backdrop-blur-sm">
+                          {(inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties).length} homes
                         </div>
-                      )}
+                        <div className="flex rounded-lg border border-border overflow-hidden shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => setMapType("roadmap")}
+                            className={`px-3 py-1.5 text-xs font-bold transition-colors ${mapType === "roadmap" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                          >
+                            Map
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMapType("satellite")}
+                            className={`px-3 py-1.5 text-xs font-bold transition-colors ${mapType === "satellite" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                          >
+                            Satellite
+                          </button>
+                        </div>
+                        <div className="flex rounded-lg border border-border overflow-hidden shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => setMapListingType("all")}
+                            className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "all" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                          >
+                            All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMapListingType("residential")}
+                            className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "residential" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                          >
+                            Residential
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMapListingType("commercial")}
+                            className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "commercial" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                          >
+                            Commercial
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => propertyMapRef.current?.fitToMarkers?.()}
+                        className="absolute top-3 right-3 z-[1000] rounded-lg border border-border bg-primary px-3 py-2 text-sm font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
+                      >
+                        Re-center
+                      </button>
                       <PropertyMap
+                        ref={propertyMapRef}
                         properties={inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties}
                         onSelectProperty={selectProperty}
                         onBoundsChange={inventoryMode === "All Listings" ? handleBoundsChange : undefined}
@@ -1025,12 +1096,59 @@ function ExplorePageContent() {
             </div>
           ) : (
             <div className="relative h-[calc(100vh-180px)] sm:h-[calc(100vh-220px)] md:h-[calc(100vh-250px)] w-full rounded-xl md:rounded-3xl overflow-hidden border border-border" style={{ boxShadow: "var(--shadow-elevated)" }}>
-              {mapPropertiesLoading && inventoryMode === "All Listings" && (
-                <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/10 rounded-xl md:rounded-3xl">
-                  <span className="rounded-xl bg-white/95 px-4 py-2 text-sm font-bold text-foreground shadow-lg">Loading listings for this area…</span>
+              <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2">
+                <div className="rounded-lg border border-border bg-surface-elevated/95 px-3 py-2 text-sm font-bold text-foreground shadow-sm backdrop-blur-sm">
+                  {(inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties).length} homes
                 </div>
-              )}
+                <div className="flex rounded-lg border border-border overflow-hidden shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setMapType("roadmap")}
+                    className={`px-3 py-1.5 text-xs font-bold transition-colors ${mapType === "roadmap" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                  >
+                    Map
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMapType("satellite")}
+                    className={`px-3 py-1.5 text-xs font-bold transition-colors ${mapType === "satellite" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                  >
+                    Satellite
+                  </button>
+                </div>
+                <div className="flex rounded-lg border border-border overflow-hidden shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setMapListingType("all")}
+                    className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "all" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMapListingType("residential")}
+                    className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "residential" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                  >
+                    Residential
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMapListingType("commercial")}
+                    className={`px-2 py-1.5 text-xs font-bold transition-colors ${mapListingType === "commercial" ? "bg-primary text-primary-foreground" : "bg-surface-elevated/95 text-foreground hover:bg-muted"}`}
+                  >
+                    Commercial
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => propertyMapRef.current?.fitToMarkers?.()}
+                className="absolute top-3 right-3 z-[1000] rounded-lg border border-border bg-primary px-3 py-2 text-sm font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
+              >
+                Re-center
+              </button>
               <PropertyMap
+                ref={propertyMapRef}
                 properties={inventoryMode === "All Listings" ? mapPropertiesForMap : filteredProperties}
                 onSelectProperty={selectProperty}
                 onBoundsChange={inventoryMode === "All Listings" ? handleBoundsChange : undefined}

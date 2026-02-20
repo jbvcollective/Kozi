@@ -73,6 +73,62 @@ const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "htt
 const LISTINGS_SELECT_COLS = "listing_key, idx, vow, updated_at";
 const MAX_LISTINGS_LIMIT = 5000;
 const MAX_PAGINATION_LIMIT = 1000;
+const GEOCODING_API_KEY =
+  process.env.GEOCODING_API_KEY?.trim() ||
+  process.env.GOOGLE_PLACES_API_KEY?.trim() ||
+  process.env.GOOGLE_MAPS_API_KEY?.trim();
+const GEOCODE_MAX_PER_REQUEST = Math.min(parseInt(process.env.GEOCODE_MAX_PER_REQUEST, 10) || 30, 50);
+const GEOCODE_DELAY_MS = Math.max(50, parseInt(process.env.GEOCODE_DELAY_MS, 10) || 120);
+
+function hasCoords(row) {
+  const idx = row.idx || {};
+  const vow = row.vow || {};
+  const lat = idx.Latitude ?? vow.Latitude ?? idx.latitude ?? vow.latitude;
+  const lng = idx.Longitude ?? vow.Longitude ?? idx.longitude ?? vow.longitude;
+  if (lat == null || lng == null) return false;
+  const nLat = Number(lat);
+  const nLng = Number(lng);
+  return Number.isFinite(nLat) && nLat >= -90 && nLat <= 90 && Number.isFinite(nLng) && nLng >= -180 && nLng <= 180;
+}
+
+function buildAddressFromRow(row) {
+  const idx = row.idx || {};
+  const vow = row.vow || {};
+  const merged = { ...vow, ...idx };
+  const streetParts = [
+    merged.StreetNumber,
+    merged.StreetDirPrefix,
+    merged.StreetName,
+    merged.StreetSuffix,
+    merged.StreetDirSuffix,
+  ].filter(Boolean);
+  const street = streetParts.join(" ").trim();
+  const city = merged.City ? String(merged.City).trim() : null;
+  const province = merged.StateOrProvince || merged.Province || merged.State;
+  const postal = merged.PostalCode ? String(merged.PostalCode).trim() : null;
+  const parts = [street, city, province, postal].filter(Boolean);
+  return parts.length ? parts.join(", ") : null;
+}
+
+async function geocodeAddress(address, apiKey) {
+  if (!apiKey || !address || typeof address !== "string" || !address.trim()) return null;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address.trim())}&key=${apiKey}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") return null;
+    const first = data.results?.[0];
+    if (!first?.geometry?.location) return null;
+    const { lat, lng } = first.geometry.location;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ANALYTICS_ROW_LIMIT = 2000;
 const RAPID_PAGINATION_MS = 400;
 const paginationLastReq = new Map();
@@ -176,12 +232,26 @@ const schoolsQuerySchema = z.object({
 
 const listingIdSchema = z.string().min(1).max(200).regex(/^[a-zA-Z0-9_.-]+$/);
 
+function isRowCommercial(row) {
+  const idx = row.idx || {};
+  const vow = row.vow || {};
+  const t = String(idx.PropertyType || idx.PropertySubType || vow.PropertyType || vow.PropertySubType || "").toLowerCase();
+  return t.includes("commercial");
+}
+function filterRowsByType(rows, type) {
+  if (!type || type === "all") return rows;
+  if (type === "commercial") return rows.filter(isRowCommercial);
+  if (type === "residential") return rows.filter((r) => !isRowCommercial(r));
+  return rows;
+}
+
 const listingsInBoundsQuerySchema = z.object({
   minLat: z.coerce.number().min(-90).max(90),
   maxLat: z.coerce.number().min(-90).max(90),
   minLng: z.coerce.number().min(-180).max(180),
   maxLng: z.coerce.number().min(-180).max(180),
   limit: z.coerce.number().int().min(1).max(1000).optional().default(500),
+  type: z.enum(["all", "residential", "commercial"]).optional().default("all"),
 }).strict().refine((d) => d.minLat < d.maxLat && d.minLng < d.maxLng, {
   message: "min must be less than max for lat and lng",
 });
@@ -197,7 +267,7 @@ app.get("/api/listings/in-bounds", strictLimiter, async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json(isProd ? { error: "Invalid query" } : { error: "Invalid query", details: parsed.error.flatten() });
   }
-  const { minLat, maxLat, minLng, maxLng, limit } = parsed.data;
+  const { minLat, maxLat, minLng, maxLng, limit, type } = parsed.data;
   if (!(await isAuthenticated(req))) {
     return res.status(401).json({ error: "Login required to view listings." });
   }
@@ -212,7 +282,53 @@ app.get("/api/listings/in-bounds", strictLimiter, async (req, res) => {
     if (error) {
       return res.status(500).json({ error: safeSupabaseError() });
     }
-    res.json({ data: data ?? [] });
+    let rows = Array.isArray(data) ? data : [];
+    const haveKeys = new Set((rows || []).map((r) => r.listing_key));
+
+    if (GEOCODING_API_KEY && rows.length > 0) {
+      let geocoded = 0;
+      for (const row of rows) {
+        if (geocoded >= GEOCODE_MAX_PER_REQUEST) break;
+        if (hasCoords(row)) continue;
+        const address = buildAddressFromRow(row);
+        if (!address) continue;
+        const coords = await geocodeAddress(address, GEOCODING_API_KEY);
+        await sleep(GEOCODE_DELAY_MS);
+        if (coords) {
+          row.idx = { ...(row.idx || {}), Latitude: coords.lat, Longitude: coords.lng };
+          geocoded++;
+        }
+      }
+    }
+
+    if (GEOCODING_API_KEY && rows.length < 50) {
+      const { data: recent } = await supabase
+        .from("listings_unified_clean")
+        .select(LISTINGS_SELECT_COLS)
+        .order("updated_at", { ascending: false })
+        .limit(150);
+      const withoutCoords = (recent || []).filter((row) => !haveKeys.has(row.listing_key) && !hasCoords(row) && buildAddressFromRow(row));
+      let geocoded = 0;
+      for (const row of withoutCoords) {
+        if (geocoded >= GEOCODE_MAX_PER_REQUEST) break;
+        const address = buildAddressFromRow(row);
+        if (!address) continue;
+        const coords = await geocodeAddress(address, GEOCODING_API_KEY);
+        await sleep(GEOCODE_DELAY_MS);
+        if (!coords) continue;
+        row.idx = { ...(row.idx || {}), Latitude: coords.lat, Longitude: coords.lng };
+        geocoded++;
+        const lat = coords.lat;
+        const lng = coords.lng;
+        if (lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng) {
+          rows.push(row);
+          haveKeys.add(row.listing_key);
+        }
+      }
+    }
+
+    const filtered = filterRowsByType(rows, type);
+    res.json({ data: filtered });
   } catch {
     res.status(500).json({ error: safeSupabaseError() });
   }

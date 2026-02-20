@@ -1,9 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
-const BOUNDS_DEBOUNCE_MS = 350;
+// #region agent log
+const _qaLog = (location, message, data = {}) => {
+  fetch("http://127.0.0.1:7243/ingest/44e6888a-4d84-49e4-8550-759d2db8073e", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5fa93a" },
+    body: JSON.stringify({
+      sessionId: "5fa93a",
+      location,
+      message,
+      data: { ...data, timestamp: Date.now() },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+};
+// #endregion
+
+const BOUNDS_DEBOUNCE_MS = 750;
 const TORONTO = { lat: 43.6532, lng: -79.3832 };
+/** Default span for initial fetch when map bounds are not yet available (degrees). */
+const DEFAULT_BOUNDS_SPAN = 0.5;
 
 function escapeHtml(str) {
   if (str == null) return "";
@@ -75,16 +93,82 @@ function loadGoogleMapsScript(apiKey, onAuthFailure) {
   return promise;
 }
 
-export default function PropertyMap({ properties = [], onSelectProperty, onBoundsChange }) {
+function buildMarkerLabel(property) {
+  const price = property.price ?? 0;
+  const priceStr =
+    price >= 1_000_000 ? `${(price / 1_000_000).toFixed(1)}M` : `${(price / 1_000).toFixed(0)}K`;
+  const parts = [priceStr];
+  const units = property.units ?? property.unitCount;
+  if (units != null && units > 1) parts.push(`${units} units`);
+  if (property.status === "New") parts.push("NEW");
+  if (property.virtualTour) parts.push("3D");
+  return parts.join(" · ");
+}
+
+const ZOOM_SHOW_PRICE = 14;
+
+/** Minimal small red dot for zoomed-out view (light rendering). */
+function getCircleMarkerIcon(google) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="#dc2626"/></svg>`;
+  const url = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  return {
+    url,
+    scaledSize: new google.maps.Size(14, 14),
+    anchor: new google.maps.Point(7, 7),
+    labelOrigin: new google.maps.Point(7, 7),
+  };
+}
+
+/** Smaller red pill for zoomed-in view (price label). */
+function getPillMarkerIcon(google) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="20" viewBox="0 0 52 20"><rect width="52" height="20" rx="10" ry="10" fill="#dc2626"/></svg>`;
+  const url = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  return {
+    url,
+    scaledSize: new google.maps.Size(52, 20),
+    anchor: new google.maps.Point(26, 10),
+    labelOrigin: new google.maps.Point(26, 10),
+  };
+}
+
+function applyMarkerStyleForZoom(marker, google, zoom) {
+  const showPrice = zoom >= ZOOM_SHOW_PRICE;
+  marker.setIcon(showPrice ? getPillMarkerIcon(google) : getCircleMarkerIcon(google));
+  marker.setLabel("");
+}
+
+const PropertyMapComponent = forwardRef(function PropertyMap(
+  { properties = [], onSelectProperty, onBoundsChange },
+  ref
+) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const infoWindowRef = useRef(null);
   const onBoundsChangeRef = useRef(onBoundsChange);
   const boundsDebounceRef = useRef(null);
+  const lastBoundsRef = useRef(null);
+  const lastRenderedIdsRef = useRef(null);
+  const popupOpenRef = useRef(false);
   const [mapLoadError, setMapLoadError] = useState(null);
 
   onBoundsChangeRef.current = onBoundsChange;
+
+  useImperativeHandle(ref, () => ({
+    fitToMarkers() {
+      if (mapRef.current && lastBoundsRef.current) {
+        mapRef.current.fitBounds(lastBoundsRef.current, {
+          top: 100,
+          right: 100,
+          bottom: 100,
+          left: 100,
+        });
+      }
+    },
+    setMapType(mapTypeId) {
+      if (mapRef.current && mapTypeId) mapRef.current.setMapTypeId(mapTypeId);
+    },
+  }), []);
 
   useEffect(() => {
     const handlePopupClick = (e) => {
@@ -102,6 +186,17 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
       if (container) container.removeEventListener("click", handlePopupClick);
     };
   }, [properties, onSelectProperty]);
+
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+    const handleWheel = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, []);
 
   useEffect(() => {
     const apiKey =
@@ -128,13 +223,16 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
             zoomControl: true,
             zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
             mapTypeControl: false,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
             streetViewControl: false,
             fullscreenControl: true,
+            scrollwheel: true,
+            gestureHandling: "greedy",
           });
+          // #region agent log
+          _qaLog("PropertyMap.js:map-init", "Map created", {});
+          // #endregion
         }
-
-        markersRef.current.forEach((m) => m.setMap(null));
-        markersRef.current = [];
 
         const list = Array.isArray(properties) ? properties : [];
         const valid = list.filter((p) => {
@@ -147,6 +245,16 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
           lat: Number(p.lat ?? p.latitude ?? p.Latitude),
           lng: Number(p.lng ?? p.longitude ?? p.Longitude),
         }));
+        const idsKey = valid.map((p) => String(p.id ?? "")).sort().join(",");
+        const sameListings = idsKey === lastRenderedIdsRef.current;
+        // #region agent log
+        _qaLog("PropertyMap.js:markers-decision", sameListings ? "Same listings, skip recreate" : "Recreate markers", {
+          sameListings,
+          count: valid.length,
+          idsKeyLen: idsKey.length,
+        });
+        // #endregion
+
         const JITTER_DEG = 0.0012;
         const keyToIndex = new Map();
         const withJitter = valid.map((p) => {
@@ -158,38 +266,53 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
           return { ...p, lat: p.lat + JITTER_DEG * Math.cos(angle), lng: p.lng + JITTER_DEG * Math.sin(angle) };
         });
 
+        if (sameListings && withJitter.length > 0) {
+          lastBoundsRef.current = new google.maps.LatLngBounds();
+          withJitter.forEach((p) => lastBoundsRef.current.extend({ lat: p.lat, lng: p.lng }));
+        } else {
+          lastRenderedIdsRef.current = idsKey;
+        }
+
         let infoWindow = infoWindowRef.current;
         if (!infoWindow) {
           infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
           infoWindowRef.current = infoWindow;
+          google.maps.event.addListener(infoWindow, "closeclick", () => {
+            popupOpenRef.current = false;
+            // #region agent log
+            _qaLog("PropertyMap.js:popup-close", "Popup closed (closeclick)", {});
+            // #endregion
+          });
         }
 
-        if (withJitter.length > 0) {
+        if (!sameListings && withJitter.length > 0) {
           const bounds = new google.maps.LatLngBounds();
-
+          const map = mapRef.current;
+          const initialZoom = map.getZoom() ?? ZOOM_SHOW_PRICE;
+          const newMarkers = [];
           withJitter.forEach((property) => {
             const price = property.price ?? 0;
-            const displayPrice =
-              price >= 1_000_000 ? `$${(price / 1_000_000).toFixed(1)}M` : `$${(price / 1_000).toFixed(0)}K`;
+            const labelText = buildMarkerLabel(property);
+            const labelStr = typeof labelText === "string" ? labelText : String(labelText ?? "");
 
             const marker = new google.maps.Marker({
               position: { lat: property.lat, lng: property.lng },
-              map: mapRef.current,
-              label: {
-                text: displayPrice,
-                color: "white",
-                fontSize: "10px",
-                fontWeight: "bold",
-              },
+              map,
+              icon: getCircleMarkerIcon(google),
+              label: "",
               zIndex: Math.round(price / 1000),
             });
+            marker._labelText = labelStr;
+            applyMarkerStyleForZoom(marker, google, initialZoom);
 
             const imgSrc =
               property.image ||
               property.images?.[0] ||
               "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=600";
+            const listingPath = `/listings/${encodeURIComponent(String(property.id || ""))}`;
             const popupContent = `
-              <div class="interactive-map-popup group flex w-full cursor-pointer flex-col" data-property-id="${escapeHtml(property.id)}">
+              <div class="interactive-map-popup group flex w-full cursor-pointer flex-col" data-property-id="${escapeHtml(property.id)}" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
+                <a href="${escapeHtml(listingPath)}" style="text-decoration:none;color:inherit;display:block" class="rounded-t-[1.5rem] rounded-b-[1.5rem]">
                 <div class="relative h-40 overflow-hidden rounded-t-[1.5rem]">
                   <img src="${escapeHtml(imgSrc)}" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=600'" />
                   <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -213,50 +336,87 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
                     </div>
                   </div>
                 </div>
+                </a>
               </div>
             `;
 
-            marker.addListener("click", () => {
+            marker.addListener("click", (e) => {
+              if (e?.domEvent) e.domEvent.stopPropagation();
+              popupOpenRef.current = true;
+              // #region agent log
+              _qaLog("PropertyMap.js:popup-open", "Popup opened", { propertyId: property.id });
+              // #endregion
               infoWindow.setContent(popupContent);
               infoWindow.open(mapRef.current, marker);
             });
 
             bounds.extend(marker.getPosition());
-            markersRef.current.push(marker);
+            newMarkers.push(marker);
           });
 
-          mapRef.current.fitBounds(bounds, {
-            top: 100,
-            right: 100,
-            bottom: 100,
-            left: 100,
-          });
-          const listener = google.maps.event.addListener(mapRef.current, "idle", () => {
-            google.maps.event.removeListener(listener);
-            const maxZoom = 15;
-            if (mapRef.current.getZoom() > maxZoom) mapRef.current.setZoom(maxZoom);
-          });
+          const oldMarkers = markersRef.current;
+          markersRef.current = newMarkers;
+          oldMarkers.forEach((m) => m.setMap(null));
+          lastBoundsRef.current = bounds;
+          // Do not auto-fit on every property update — it overrides user zoom/pan. Use Re-center to fit.
+        } else if (!sameListings && withJitter.length === 0) {
+          markersRef.current.forEach((m) => m.setMap(null));
+          markersRef.current = [];
         }
 
         const map = mapRef.current;
         if (map && typeof onBoundsChangeRef.current === "function") {
           const notifyBounds = () => {
             boundsDebounceRef.current = null;
+            if (popupOpenRef.current) {
+              // #region agent log
+              _qaLog("PropertyMap.js:notifyBounds", "Skipped (popup open)", {});
+              // #endregion
+              return;
+            }
             const b = map.getBounds();
-            if (b) {
-              onBoundsChangeRef.current({
+            if (b && typeof b.getSouth === "function") {
+              const bounds = {
                 minLat: b.getSouth(),
                 maxLat: b.getNorth(),
                 minLng: b.getWest(),
                 maxLng: b.getEast(),
+              };
+              // #region agent log
+              _qaLog("PropertyMap.js:notifyBounds", "Firing onBoundsChange", bounds);
+              // #endregion
+              onBoundsChangeRef.current(bounds);
+            } else {
+              const c = map.getCenter?.();
+              const lat = c?.lat?.() ?? TORONTO.lat;
+              const lng = c?.lng?.() ?? TORONTO.lng;
+              const half = DEFAULT_BOUNDS_SPAN / 2;
+              onBoundsChangeRef.current({
+                minLat: lat - half,
+                maxLat: lat + half,
+                minLng: lng - half,
+                maxLng: lng + half,
               });
             }
           };
           const scheduleNotify = () => {
+            // #region agent log
+            _qaLog("PropertyMap.js:bounds_changed", "bounds_changed fired", {});
+            // #endregion
             if (boundsDebounceRef.current) clearTimeout(boundsDebounceRef.current);
             boundsDebounceRef.current = setTimeout(notifyBounds, BOUNDS_DEBOUNCE_MS);
           };
           map.addListener("bounds_changed", scheduleNotify);
+          map.addListener("click", () => {
+            popupOpenRef.current = false;
+            // #region agent log
+            _qaLog("PropertyMap.js:popup-close", "Popup closed (map click)", {});
+            // #endregion
+          });
+          map.addListener("zoom_changed", () => {
+            const zoom = map.getZoom() ?? ZOOM_SHOW_PRICE;
+            markersRef.current.forEach((m) => applyMarkerStyleForZoom(m, google, zoom));
+          });
           setTimeout(() => {
             if (mounted && mapRef.current) notifyBounds();
           }, 400);
@@ -264,6 +424,12 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
       })
       .catch((err) => {
         console.error("Google Maps load error:", err?.message || err);
+        // #region agent log
+        _qaLog("PropertyMap.js:map-error", "Map load failed", {
+          message: err?.message,
+          auth: err?.message?.includes("auth"),
+        });
+        // #endregion
         if (mounted) setMapLoadError(err?.message?.includes("auth") ? "auth" : "load");
       });
 
@@ -330,4 +496,6 @@ export default function PropertyMap({ properties = [], onSelectProperty, onBound
       />
     </div>
   );
-}
+});
+
+export default PropertyMapComponent;
